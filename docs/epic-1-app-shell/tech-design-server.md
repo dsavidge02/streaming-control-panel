@@ -864,7 +864,7 @@ const HEARTBEAT_INTERVAL_MS = 15_000;
 export function registerLiveEventsRoute(app: FastifyInstance) {
   registerRoute(app, {
     method: 'GET',
-    url: PATHS.liveEvents,
+    url: PATHS.live.events,
     // not exempt → session gate applies, returns 401 unauthenticated
     handler: async (req, reply) => {
       // SSE response headers
