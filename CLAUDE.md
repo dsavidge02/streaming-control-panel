@@ -52,9 +52,16 @@ User-scoped preferences and feedback memories live outside the repo at `~/.claud
 
 ## Current state — before starting work
 
-Epic 1 Story 0 was attempted 2026-04-17 and rolled back due to a Windows Codex sandbox issue that silently disabled network access and caused `link:`-dependency corruption. The diagnosis, mitigation, and retry plan live in:
+Epic 1 is in progress. Story 0 (foundation scaffolding) and Story 1 (Fastify server + central route wiring) are accepted and committed; cumulative test count is 11 (3 shared + 8 server). Epic 1's remaining stories (2-9) are pending. See `docs/epic-1-app-shell/team-impl-log.md` for the orchestration log and `docs/epic-1-app-shell/stories/coverage.md` for the AC/TC ownership map + cross-story dependency chain.
 
-- `docs/epic-1-app-shell/RESTART-INSTRUCTIONS.md` — how to restart Story 0 in a fresh Claude Code session.
-- `docs/epic-1-app-shell/team-impl-log.md` §Windows Codex Hardening — mandatory `--dangerously-bypass-approvals-and-sandbox` flag on every `codex exec`.
+`docs/epic-1-app-shell/RESTART-INSTRUCTIONS.md` is stale (Story 0 accepted) — slated for deletion on next cleanup.
 
-If you are a new Claude Code session opening this repo, read `RESTART-INSTRUCTIONS.md` before spawning any teammates.
+## Codex harness
+
+Running Codex on this project has a single canonical procedure. Follow it and Codex completes reliably without manual intervention; deviate and you reintroduce the Story 0 / Story 1 failure modes (Windows sandbox bypass, `/tmp/` path divergence, session-wide flake walls, turn-budget exhaustion mid-fix).
+
+- **Runbook:** `docs/codex-harness.md` — the definitive procedure. Read this first if you touch Codex.
+- **Scripts:** `scripts/codex/` — the harness itself (exec wrapper, completion checker, outer driver, prompt composer, env-rules block).
+- **Supporting findings:** `docs/v2-findings/001, 004, 005, 006, 007, 009` — historical evidence that feeds the runbook.
+
+For teammates spawned by the `ls-team-impl-v2` orchestration, the canonical handoff flow is: read artifacts → author a task section → `scripts/codex/compose-prompt.sh` → `scripts/codex/drive-until-green.sh` → relay the auto-generated `<stem>.impl-report.md` verbatim via SendMessage. See `docs/codex-harness.md` §Teammate usage for the exact commands and exit-code handling.

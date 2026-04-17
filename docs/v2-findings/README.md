@@ -4,9 +4,13 @@ Working notes for refining the experimental v2 Liminal Spec skills: `ls-tech-des
 
 **Purpose:** accumulate real-world feedback from running v2 end-to-end on the streaming-control-panel project. Findings here feed back into the skill authors' refinement process. Distinguishes v2-specific issues from issues common to v1 (both for accurate attribution and to surface cross-skill-family improvements).
 
-**Status as of 2026-04-17:** Epic 1 in-progress. **Story 0 landed GREEN on attempt 5** after a 4-attempt diagnostic + harness-build cycle. The working compound mitigation pattern is captured holistically in **finding 007** — it's the "use this pattern" reference for future stories. Findings 001, 004, 005, 006 document each component failure that contributed to the final pattern. UI spec surface area of v2 has **not yet been exercised** — the UI spec enters scope at Story 5.
+> **Canonical runbook for running Codex:** [`docs/codex-harness.md`](../codex-harness.md) + the scripts at `scripts/codex/`. That doc + those scripts are what future teammates use; findings below are the historical evidence that shaped them.
+>
+> Finding 007's original "use this pattern" claim held for Story 0 but not Story 1. The runbook supersedes findings 007 and 006 and incorporates findings 001, 004, 005, 009.
 
-**For anyone implementing Story 1+: start with finding 007.** The rest of the findings are supporting evidence.
+**Status as of 2026-04-17:** Epic 1 in-progress. Story 0 and Story 1 accepted + committed. UI spec surface area of v2 has **not yet been exercised** — the UI spec enters scope at Story 5.
+
+**For anyone implementing Story 2+: read `docs/codex-harness.md` first.** The findings below explain *why* the runbook looks the way it does.
 
 ---
 

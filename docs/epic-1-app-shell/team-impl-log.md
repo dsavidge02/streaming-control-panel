@@ -2,7 +2,7 @@
 
 **Skill:** `ls-team-impl-v2` (experimental — paired with `ls-tech-design-v2`)
 
-**state:** `STORY_ACTIVE` — Story 1 `01-fastify-server-central-route-wiring` (phase: `reviewing`), started 2026-04-17 in the restart session. Implementer phase completed 12:55; implementation green by orchestrator's own `pnpm verify` (exit 0, 11 tests — 3 shared + 8 server) but story-1-implementer went silent post-completion without sending a §Step 6 report; orchestrator extracted CLI evidence from on-disk JSONL artifacts and proceeded to reviewer phase. Prior state `BETWEEN_STORIES` after Story 0 acceptance + commit (`3408300` docs bootstrap + `15b3c00` feat: Story 0).
+**state:** `BETWEEN_STORIES` — Story 1 accepted and committed 2026-04-17 (commits `7c0446d` fix(story-0) deferred findings + `e65d7f5` feat: Story 1 — Fastify server + central route wiring). Cumulative test count: 11 (3 shared + 8 server). Ready to reload skill and spawn Story 2. Prior state `STORY_ACTIVE` (phase: reviewing); reviewer ACCEPT verdict 21 PASS + 1 NOTE; three Minor dispositions recorded in §Story 1 Pre-Acceptance Receipt.
 
 **Story 0 retry started 2026-04-17** in a fresh Claude Code session under the updated Windows Codex Hardening. Prior rollback context preserved in §Process Notes. Story 0 deferred findings #1 (PATHS shape) and #2 (gateExempt filename) resolved in the restart session prep phase — see §Story 0 Pre-Acceptance Receipt dispositions.
 
@@ -155,15 +155,180 @@ Re-evaluate the flag requirement at Epic 1 completion; expected to persist for t
 
 ## Materialized Handoff Templates
 
-Re-read these before constructing each teammate's prompt. Source of truth for dispatch. Story 0's run surfaced six orchestration findings; they are embedded below as non-negotiables — do not relax any mid-epic without a §Process Notes entry documenting why.
+Codex-side mechanics — invocation shape, env-rules block, flake/wall handling, fix-iteration loop — now live in **[`docs/codex-harness.md`](../codex-harness.md)** and the scripts at **`scripts/codex/`**. Read the runbook first; it is the single source of truth for *how to run Codex*. The templates below carry only the team-impl-v2-specific instructions: what the supervising teammate reads, how they dispatch Codex **through the harness**, and what they SendMessage back to team-lead. Re-read the runbook + these templates before each handoff.
 
-### Non-Negotiable Invariants for Every Codex Invocation
+### Non-Negotiable Invariants (summary)
 
-Every implementer and reviewer handoff bakes in these invariants. They are not "best effort."
+All invariants below are enforced by `scripts/codex/env-rules.txt` + `scripts/codex/drive-until-green.sh`. They are listed here for quick reference; full rationale in the runbook.
 
-1. **Sandbox bypass flag.** Every `codex exec` AND `codex exec resume` passes `--dangerously-bypass-approvals-and-sandbox`. Missing flag = silent network-off + `link:`-dep corruption (see §Windows Codex Hardening and the Story 0 rollback entry in §Process Notes).
+1. `--dangerously-bypass-approvals-and-sandbox` on every `codex exec` (finding 001).
+2. Prompt + JSONL paths live at `C:/Users/dsavi/AppData/Local/Temp/`, not `/tmp/` (finding 004).
+3. Delivery-check marker `DELIVERY_CHECK_MARKER_ECHO_7077` prepends every prompt and is grepped before trusting output (finding 007).
+4. Per-command `STATUS_DLL_INIT_FAILED` flakes retry up to 3× with 2s delay (finding 006 / rule 9).
+5. Session-wide walls (first 3 commands all `-1073741502` empty) short-circuit and relaunch on a fresh `codex exec` process; wrapper cap is 3 total attempts (finding 009 / rule 9b).
+6. Ground-truth gates run from the teammate's bash after Codex exits — `drive-until-green.sh`'s `--gate` command is the authoritative "done" signal, NOT Codex's self-report.
+7. APPEND, do not replace, on any "additions to existing file" deliverable (Story 0 finding #6; rule 7 in env-rules.txt).
+8. Orchestrator pre-accept runs `git diff --stat` across ALL touched paths (not just declared deliverables) to catch overwrite regressions.
 
-2. **Windows-native temp paths.** All Codex prompt files AND output JSONL paths use `C:/Users/dsavi/AppData/Local/Temp/<name>` (forward-slash Windows absolute). NEVER `/tmp/` — Claude Code's Write tool resolves `/tmp/foo` to `C:\tmp\foo`, but Git bash resolves `/tmp/foo` to `%TEMP%\foo`; they are different directories, Codex reads its prompt via bash, and a mismatch silently feeds Codex an empty prompt (see 2026-04-17 14:23Z in §Process Notes).
+### Implementer Template
+
+```
+You are implementing Story {N} on team epic-1-app-shell. You supervise Codex
+via the harness; you do NOT implement directly. The runbook at
+`docs/codex-harness.md` is your source of truth for Codex invocation —
+read it before proceeding.
+
+Step 1 — Load codex-subagent skill:
+  Skill({codex-subagent})
+  If the skill fails to load, report the error. Do not implement yourself.
+
+Step 2 — Read artifacts sequentially with reflection.
+  Write cumulative reflections to
+    C:/Users/dsavi/AppData/Local/Temp/reflection-story-{N}.md
+  before launching anything.
+
+  Reading order:
+    1. docs/epic-1-app-shell/tech-design.md             (index + cross-cutting)
+    2. {primary tech-design companion(s) for this story}
+    3. docs/epic-1-app-shell/test-plan.md               ({Story N} chunk)
+    4. docs/epic-1-app-shell/epic.md                    (overall context)
+    5. docs/epic-1-app-shell/stories/{NN-slug}.md       (THIS story — ACs/TCs/DoD)
+    6. docs/epic-1-app-shell/stories/coverage.md        (confirm AC ownership)
+    7. docs/epic-1-app-shell/ui-spec.md (ONLY if story is in UI-spec scope
+       per §UI Spec Scope — Stories 5, 6, 7, partial 8)
+
+Step 3 — Author the task section.
+  Write C:/Users/dsavi/AppData/Local/Temp/story-{N}-task.md using the
+  structure documented in docs/codex-harness.md §Prompt composition.
+  Do NOT include the env-rules block or delivery marker — compose-prompt.sh
+  prepends those. The task section must:
+    - Enumerate explicit deliverables (exact paths, mirror the DoD fully)
+    - Flag APPEND-vs-replace constraints on any pre-existing files
+    - Specify the cumulative test count expected after this story
+    - Name any deferred-to-later-story scope boundaries
+
+Step 4 — Compose the full prompt:
+  scripts/codex/compose-prompt.sh \
+    C:/Users/dsavi/AppData/Local/Temp/story-{N}-task.md \
+    C:/Users/dsavi/AppData/Local/Temp/codex-story-{N}-impl-prompt.md
+
+Step 5 — Drive Codex to green:
+  cd /c/github/streaming-control-panel
+  scripts/codex/drive-until-green.sh \
+    C:/Users/dsavi/AppData/Local/Temp/codex-story-{N}-impl-prompt.md \
+    C:/Users/dsavi/AppData/Local/Temp/codex-story-{N}-impl \
+    --gate "pnpm red-verify && pnpm verify" \
+    {--expect-path /c/github/streaming-control-panel/<each-deliverable>}... \
+    --link-grep-glob '/c/github/streaming-control-panel/apps/*/package.json' \
+    --link-grep-glob '/c/github/streaming-control-panel/package.json'
+
+  The driver handles: flake retry (cap 3), session-wall recovery,
+  ground-truth gate check after every Codex exit, fix-prompt composition
+  from gate output, outer iteration (cap 4), and §Step 6 report generation.
+  You do NOT compose fix prompts. You do NOT decide whether to retry.
+  You do NOT parse JSONL.
+
+Step 6 — Handle the exit code:
+  Exit 0  → cat the auto-generated report and SendMessage team-lead:
+              cat C:/Users/dsavi/AppData/Local/Temp/codex-story-{N}-impl.impl-report.md
+            That IS your §Step 6 report — relay verbatim, don't compose
+            your own.
+  Exit 20 → MAX_ITERATIONS_EXHAUSTED. SendMessage team-lead with the report
+            path + verdict; routine fixes exhausted; human judgment needed.
+  Exit 30 → NON_ROUTINE_FAILURE (WALLED_3X, NO_DELIVERY_MARKER,
+            LINK_REGRESSION, CODEX_CRASHED, ...). SendMessage with verdict
+            and report path.
+  Exit 40 → Script / environment issue; fix the invocation and rerun.
+
+Reminders:
+  - No SendMessage composed from memory — the report file is the handoff.
+  - Send team-lead a one-line status update every 10 minutes of elapsed
+    driver time even if nothing's done yet.
+  - If you find yourself running `codex exec` directly instead of via the
+    driver, STOP — the harness exists precisely to prevent that.
+```
+
+### Reviewer Template
+
+```
+You are reviewing Story {N}'s implementation on team epic-1-app-shell. You
+MUST run a Codex spec-compliance review via the harness AND a parallel
+architectural review of your own. Source of truth for Codex invocation:
+docs/codex-harness.md.
+
+Step 1 — Load codex-subagent skill:
+  Skill({codex-subagent})
+  No CLI session, no review. Do not substitute your own compliance check.
+
+Step 2 — Read artifacts sequentially with reflection (same order as
+  implementer; include ui-spec.md when applicable). Write reflections to
+  C:/Users/dsavi/AppData/Local/Temp/reflection-review-story-{N}.md
+
+Step 3 — Launch Codex review via the harness.
+  Author review task at:
+    C:/Users/dsavi/AppData/Local/Temp/story-{N}-review-task.md
+  describing what to check:
+    - AC / TC coverage vs story + test-plan
+    - Interface compliance vs tech-design companions
+    - Scope boundary check (no Story N+1 creep)
+    - Pre-existing-file regression check (`git diff <file>` for any file
+      the story claims to modify)
+    - `grep -rn '"link:' apps/*/package.json package.json` → empty
+    - For UI-scope stories: component/state coverage per ui-spec;
+      screenshot artifacts produced
+    - Severity-organized findings (Critical / Major / Minor)
+    - Write findings INCREMENTALLY to
+      C:/Users/dsavi/AppData/Local/Temp/codex-story-{N}-findings.md
+      as each criterion is verified (Story 0 finding #5 mitigation — long
+      review sessions can exhaust turn budget before the consolidated
+      message).
+
+  Compose + drive (review mode — don't auto-iterate on gate failures;
+  reviewer surfaces fixes, doesn't own them):
+
+    scripts/codex/compose-prompt.sh \
+      C:/Users/dsavi/AppData/Local/Temp/story-{N}-review-task.md \
+      C:/Users/dsavi/AppData/Local/Temp/codex-story-{N}-review-prompt.md
+
+    scripts/codex/drive-until-green.sh \
+      C:/Users/dsavi/AppData/Local/Temp/codex-story-{N}-review-prompt.md \
+      C:/Users/dsavi/AppData/Local/Temp/codex-story-{N}-review \
+      --gate "pnpm red-verify && pnpm verify" \
+      --max-iterations 1
+
+  (--max-iterations 1 runs Codex once + the ground-truth gate once, then
+  reports. Reviewer surfaces findings; fixes get routed to a fresh driver
+  invocation with a fix task if needed.)
+
+Step 4 — In parallel with Codex: do your own architectural review.
+  - Does the implementation match the tech-design's vocabulary and shape?
+  - Any premature abstraction / YAGNI violation?
+  - Drop-in readiness for the next consumer (check coverage.md
+    §Cross-Story Dependency Summary)?
+  - UI spec compliance when applicable: components named, states reachable,
+    screenshot artifacts produced per the verification surface.
+
+Step 5 — Consolidate + route fixes (if any).
+  Read Codex's incremental findings file + your architectural pass. Merge.
+  Verify claims against actual code — common hallucination vectors:
+  @panel/shared imports, tuple type names.
+
+  If fixes are needed, route them via a NEW driver invocation with a fix
+  task — do NOT implement yourself. Use `drive-until-green.sh` the same
+  way the implementer did; you're the caller this time.
+
+Step 6 — Report to orchestrator via SendMessage:
+  - Codex review session ID(s) (from the driver's impl-report.md)
+  - Delivery-check marker observed (REQUIRED)
+  - Wall detected / relaunch count (from the driver report)
+  - Your architectural findings
+  - Codex findings (pointer to codex-story-{N}-findings.md)
+  - What was fixed / what remains open (fixed / accepted-risk / defer)
+  - Final pnpm red-verify + pnpm verify exit codes (orchestrator reruns
+    authoritatively as part of acceptance)
+  - UI spec compliance status (when applicable)
+  - "What else did you notice but did not report?"
+```
 
 3. **Delivery-check marker.** Every Codex prompt prepends `FIRST THING: echo DELIVERY_CHECK_MARKER_ECHO_7077 before anything else.` After Codex exits, `grep DELIVERY_CHECK_MARKER_ECHO_7077 <output.jsonl>` before trusting any Codex report. No match = Codex received an empty or garbled prompt; the run's "findings" are Codex flailing.
 
@@ -178,296 +343,6 @@ Every implementer and reviewer handoff bakes in these invariants. They are not "
 7. **Append vs replace phrasing.** Any deliverable described as "additions to" or "extensions of" an existing file (e.g., `.gitignore` entries, README sections, package.json script additions) must say verbatim in the prompt: `APPEND — do not replace; preserve all existing content.` Story 0's `.gitignore` was nearly wiped because this was implicit.
 
 8. **Orchestrator pre-accept structural check.** Before accepting any story, the orchestrator runs `git diff --stat` across ALL touched paths — not just declared deliverables — to catch overwrite regressions. This is in addition to the story acceptance gate.
-
-### Environment Rules Block (paste verbatim into every Codex prompt)
-
-```
-=== ENVIRONMENT RULES (Windows, this project) ===
-
-0. FIRST THING: echo DELIVERY_CHECK_MARKER_ECHO_7077 before anything else.
-
-1. Workspace-only reads. Never recursively scan C:\github, C:\Users, or any
-   path outside C:/github/streaming-control-panel. Artifact paths in the
-   epic / tech design / story / test-plan are all you need. Recursive
-   cross-repo scans time out and waste budget.
-
-2. pnpm binary: invoke the globally-installed pnpm directly. Do NOT run
-   `corepack enable`, do NOT use corepack at all. Use:
-     /c/Users/dsavi/AppData/Local/fnm_multishells/6536_1776434373367/pnpm
-   (or `pnpm` if already on PATH for this shell). Install packages from
-   the npm registry via declared semver ranges.
-
-3. Abort on failure. If `pnpm install` or any registry fetch fails, STOP
-   and report. NEVER emit `link:` dependencies as a fallback — they point
-   to random local directories, break CI, and were the reason Story 0 was
-   rolled back. No dep graph is better than a corrupted dep graph.
-
-4. apply_patch fallback. If `apply_patch` fails for any file, fall back
-   to a full-file write via a single write call. Do not retry apply_patch
-   on the same file.
-
-5. Trust the filesystem, not self-reports. Codex wraps combined PowerShell
-   statements into a single -Command block; CWD and intermediate state do
-   not reliably carry across statements. In-block `Test-Path` / existence
-   checks return false positives/negatives (see 2026-04-17 finding #4).
-   Ground truth is verified from bash after Codex exits.
-
-6. Clean up lockfile backups. Delete any transient
-   `pnpm-lock.yaml.<digits>` file before finishing; only
-   `pnpm-lock.yaml` itself should remain.
-
-7. Append vs replace. When a deliverable is described as "additions to an
-   existing file," APPEND — do not replace. Preserve all existing content.
-
-9. Rule 9 — per-command flake retry. If a command exits with
-   exit_code == -1073741502 AND empty stdout/stderr, retry that exact
-   command up to 3 times with 2s delay between attempts. Signature is
-   Windows STATUS_DLL_INIT_FAILED on PowerShell spawn; surgical; never
-   fires on real failures.
-
-9b. Rule 9b — session-wall short-circuit. If the FIRST 3 consecutive
-    commands of this session all fail with -1073741502 empty output,
-    and the commands are heterogeneous (e.g., echo + sleep + file-read,
-    not the same command retried), the whole session is walled.
-    STOP IMMEDIATELY — do not continue per-command retries, do not
-    attempt more commands. Emit an agent_message stating
-    "SESSION_WALL_DETECTED: first 3 commands all -1073741502 empty"
-    and end the turn. The caller's wrapper will relaunch a fresh
-    `codex exec` (NEW process; do NOT use `resume`). See
-    docs/v2-findings/009-session-wide-codex-flake-walls.md.
-```
-
-### Canonical Codex Invocation Shapes
-
-```bash
-TEMP="C:/Users/dsavi/AppData/Local/Temp"
-
-# Initial exec (fresh session — prefer this shape for fix rounds too)
-cd /c/github/streaming-control-panel && \
-  codex exec --json --dangerously-bypass-approvals-and-sandbox - \
-    < "$TEMP/codex-story-N-<phase>-prompt.md" \
-    > "$TEMP/codex-story-N-<phase>.jsonl" 2>/dev/null
-
-# Resume (only when prior session state is materially cheaper to keep)
-codex exec resume --json --dangerously-bypass-approvals-and-sandbox --last \
-  "<resume-prompt text>" \
-  > "$TEMP/codex-story-N-<phase>-resume.jsonl" 2>/dev/null
-```
-
-Always write prompt files and JSONL output to `$TEMP`. Never `/tmp/`. Resume sessions have worse flake characteristics than fresh exec (Story 0 finding #2); prefer fresh exec for fix rounds.
-
-### Implementer Template
-
-```
-You are implementing Story {N}. You are a supervisory layer over a Codex
-CLI subagent. You do NOT implement directly. Codex writes the code; you
-manage Codex, verify output, and report to the orchestrator.
-
-Step 1 — Load the codex-subagent skill:
-  Skill({codex-subagent})
-  If the skill fails to load, report the exact error. Do not skip, do not
-  implement yourself, do not fabricate CLI behavior.
-
-Step 2 — Read artifacts sequentially, reflecting after each file.
-  After each file, stop and write a short reflection before reading the
-  next. Write cumulative reflections to:
-    C:/Users/dsavi/AppData/Local/Temp/reflection-story-{N}.md
-  before launching Codex.
-
-  Reading order:
-    1. docs/epic-1-app-shell/tech-design.md             (index + cross-cutting)
-    2. {primary tech-design companion(s) for this story}
-    3. docs/epic-1-app-shell/test-plan.md               ({Story N} chunk)
-    4. docs/epic-1-app-shell/epic.md                    (overall context)
-    5. docs/epic-1-app-shell/stories/{NN-slug}.md       (THIS story — ACs, TCs, DoD)
-    6. docs/epic-1-app-shell/stories/coverage.md        (confirm AC ownership)
-    7. {docs/epic-1-app-shell/ui-spec.md — ONLY if story is in UI-spec
-       scope per §UI Spec Scope. Skip for Stories 1-4 and 9.}
-
-Step 3 — Launch Codex via codex-subagent.
-
-  MANDATORY INVOCATION (see §Non-Negotiable Invariants and §Canonical
-  Codex Invocation Shapes — verbatim):
-
-    TEMP="C:/Users/dsavi/AppData/Local/Temp"
-    cd /c/github/streaming-control-panel && \
-      codex exec --json --dangerously-bypass-approvals-and-sandbox - \
-        < "$TEMP/codex-story-{N}-impl-prompt.md" \
-        > "$TEMP/codex-story-{N}-impl.jsonl" 2>/dev/null
-
-  - Prompt file and JSONL output ONLY at C:/Users/dsavi/AppData/Local/Temp/.
-    Never /tmp/.
-  - Working directory: C:/github/streaming-control-panel.
-  - Model: gpt-5.4 (inherited from ~/.codex/config.toml).
-
-  Prompt composition (write to $TEMP/codex-story-{N}-impl-prompt.md):
-    - Env rules block (verbatim from §Environment Rules Block) including
-      the DELIVERY_CHECK_MARKER_ECHO_7077 marker and Rule 9.
-    - Artifact paths list (same files you just read).
-    - Explicit deliverables list — mirror the story DoD completely. Do
-      not drop any.
-    - For any deliverable described as "additions to" or "extensions of"
-      an existing file, the prompt must say: "APPEND — do not replace;
-      preserve all existing content."
-    - Tell Codex to run the story acceptance gate itself and report
-      exit codes before declaring green.
-
-  Post-exec verification (from bash, before trusting Codex):
-    - grep DELIVERY_CHECK_MARKER_ECHO_7077 "$TEMP/codex-story-{N}-impl.jsonl"
-      No match = prompt didn't land. Relaunch with FRESH exec (not resume).
-    - Scan the JSONL for any exit_code -1073741502 with empty output that
-      survived rule 9's retry cap. If any remain, relaunch the whole
-      session with fresh exec. Cap at 2 relaunches; escalate beyond.
-
-Step 4 — Codex self-review loop AND continue-on-failure iteration.
-  Two cases to handle:
-
-  (a) Codex reports GREEN: resume Codex (or launch a fresh exec if the
-      story touched many files — fresh exec has lower flake rate) with:
-        "Re-read your output. What's wrong? What's weak? What did you
-         skip? Check every deliverable against the DoD. Check for
-         pre-existing files you may have overwritten."
-      Fix non-controversial issues in-place. Iterate until clean.
-
-  (b) Codex session ends with OPEN GATE FAILURES or legitimate errors
-      (typecheck errors, formatting failures, missing dep detections,
-      unit-test failures — NOT flakes; NOT session walls). This means
-      Codex did real work, caught real errors, and its turn ended
-      without fixing them. Launch a FRESH exec (not resume) with a
-      prompt that lists the specific errors and directs Codex to fix
-      them. Do NOT report to the orchestrator until either:
-        (i)  gates pass (pnpm red-verify + pnpm verify exit 0), or
-        (ii) you hit a genuinely non-routine blocker that needs
-             human/orchestrator judgment.
-
-      This is the "Agents forget to continue iterating after turn
-      boundary" failure mode from Story 1 (finding 009 residual):
-      Codex ended its 3rd session with red-verify failing on 5 real
-      typecheck errors, and the implementer sat idle for 25 minutes
-      instead of launching a 4th exec to continue. Don't repeat.
-
-Step 5 — Structural correctness check (MANDATORY before reporting green).
-  Run from bash. Do NOT trust Codex self-reports.
-
-  (a) grep -rn '"link:' apps/*/package.json package.json 2>/dev/null
-      Expected: empty. Any match = corrupted dep graph (Story 0 rollback
-      class). Route back to Codex for registry reinstall.
-
-  (b) git diff --stat across ALL touched paths — not just declared
-      deliverables. Flag any pre-existing tracked file that appears
-      unexpectedly in the diff. For each deliverable phrased as
-      "additions to" an existing file, run `git diff <file>` and confirm
-      pre-existing content is still present.
-
-  (c) Story acceptance gate (from §Verification Gates):
-        pnpm red-verify   → must exit 0
-        pnpm verify       → must exit 0
-      (green-verify is inert until Story 4 — .red-ref doesn't exist yet.)
-
-Step 6 — Report back to the orchestrator. SendMessage includes:
-  - Files created / modified (complete list)
-  - Test counts: {expected} expected, {observed} observed
-  - Gate results: pnpm red-verify → exit code, pnpm verify → exit code
-  - Structural checks: grep link: result, git diff --stat summary,
-    append-vs-replace check per file if relevant
-  - Delivery-check marker observed in JSONL? (REQUIRED)
-  - Flake-signature command count surviving rule-9 retries (0 expected)
-  - Wrapper relaunch count (0-2; >2 = escalate)
-  - Codex session ID(s)
-  - What self-review found and fixed across rounds
-  - What remains open with reasoning
-  - Any spec deviations or concerns
-  - UI spec: {applicable | N/A for this story per §UI Spec Scope}
-```
-
-### Reviewer Template
-
-```
-You are reviewing the Story {N} implementation. You MUST use a Codex CLI
-subagent for spec-compliance review. No CLI session ID, no review.
-
-Step 1 — Load the codex-subagent skill:
-  Skill({codex-subagent})
-  If the skill fails to load, report the exact error. Do not review
-  without Codex; do not substitute your own compliance check.
-
-Step 2 — Read artifacts sequentially with reflection (same order as
-  implementer). Write cumulative reflections to:
-    C:/Users/dsavi/AppData/Local/Temp/reflection-review-story-{N}.md
-
-Step 3 — Dual review (parallel):
-
-  A. Launch Codex for spec-compliance review.
-
-     MANDATORY INVOCATION (see §Canonical Codex Invocation Shapes):
-
-       TEMP="C:/Users/dsavi/AppData/Local/Temp"
-       cd /c/github/streaming-control-panel && \
-         codex exec --json --dangerously-bypass-approvals-and-sandbox - \
-           < "$TEMP/codex-story-{N}-review-prompt.md" \
-           > "$TEMP/codex-story-{N}-review.jsonl" 2>/dev/null
-
-     Prompt includes the env-rules block (§Environment Rules Block) with
-     the DELIVERY_CHECK_MARKER_ECHO_7077 marker and Rule 9. Verify the
-     marker echoed before trusting any findings. Scan for surviving
-     flake-signature commands; relaunch with fresh exec if any remain.
-     Cap at 2 relaunches.
-
-     Review instructions for Codex:
-       - AC/TC coverage check against the story and test-plan
-       - Interface compliance with the tech-design companions
-       - No stack leaks, no secrets, no half-finished stubs outside scope
-       - Every package.json dep value must be a proper semver range from
-         the npm registry — NEVER a `link:` path. Run
-         `grep -rn '"link:' apps/*/package.json package.json` yourself
-         and verify empty.
-       - Pre-existing-file regression check: for any file the story
-         claims to modify (not create), run `git diff <file>` and
-         confirm no pre-existing content was lost. Check .gitignore,
-         .npmrc, README.md, root configs, and every file listed in the
-         DoD as "additions to" an existing file.
-       - Workspace layout matches tech-design §Workspace Layout
-       - Verification scripts compose per tech-design §Verification
-       - Severity-organized findings (Critical / Major / Minor)
-       - Write findings INCREMENTALLY to a file as each criterion is
-         verified, not buffered until the end (Story 0 finding #5: long
-         review sessions can exhaust turn-budget before emitting the
-         consolidated message). Path:
-           C:/Users/dsavi/AppData/Local/Temp/codex-story-{N}-findings.md
-
-     Launch async. Capture session ID.
-
-  B. While Codex reviews, do your own architectural review:
-     - Does the implementation match the tech-design's stated shape and
-       vocabulary?
-     - Any premature abstraction / YAGNI violation?
-     - Will this land cleanly for the next consumer (see coverage.md
-       §Cross-Story Dependency Summary)?
-     - UI spec compliance when applicable: structural checks only
-       (components present, named states reachable, tech-design
-       identifiers resolve, screenshot artifacts produced per the
-       ui-spec verification surface).
-
-Step 4 — Consolidate and fix:
-  Read Codex findings (incremental findings file + JSONL). Merge with
-  your own findings. Verify claims against actual code — @panel/shared
-  imports are a common Codex hallucination vector. Compile a consolidated
-  fix list. Launch Codex (FRESH exec, not resume) to implement fixes;
-  have Codex self-review after. Re-run `pnpm verify`.
-
-Step 5 — Report to orchestrator. SendMessage includes:
-  - Codex review session ID(s)
-  - Delivery-check marker observed? (REQUIRED)
-  - Flake-signature count surviving rule-9 retries (0 expected)
-  - Relaunch count (0-2; >2 = escalate)
-  - Your architectural findings
-  - Codex findings (pointers to the incremental findings file)
-  - What was fixed / what remains open (fixed / accepted-risk / defer)
-  - Final pnpm red-verify + pnpm verify exit codes
-  - UI spec compliance: {applicable — structural checks + screenshot
-    artifact paths | N/A for this story}
-  - "What else did you notice but did not report?"
-```
 
 ### Orchestrator Pre-Acceptance Checklist
 

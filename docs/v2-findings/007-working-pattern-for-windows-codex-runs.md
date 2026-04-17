@@ -1,9 +1,15 @@
 # Finding 007 — Working pattern for Windows Codex runs (positive finding)
 
+> **⚠ Superseded 2026-04-17 by [`docs/codex-harness.md`](../codex-harness.md) + `scripts/codex/`.**
+>
+> Story 0's compound mitigation pattern documented here was *insufficient for Story 1*, which exposed (a) session-wide flake walls that Rule 9's per-command retry cannot handle (see [Finding 009](009-session-wide-codex-flake-walls.md)) and (b) turn-budget exhaustion mid-fix with no outer iteration loop (Codex catches real errors, runs out of turn before fixing, and nothing drives a follow-up exec — the orchestrator had to manually intervene).
+>
+> The runbook subsumes this finding and findings 001, 004, 005, 006, 009 into a single algorithm + in-repo scripts set (`scripts/codex/drive-until-green.sh` handles the outer loop). This file is preserved as historical evidence; do **NOT** use its "copy-paste ready" pattern as your primary reference — read the runbook.
+
 **Date:** 2026-04-17
 **v2-specific:** No — applies to any skill using `codex-subagent` on Windows.
 **Severity:** N/A (this is a positive finding — the compound mitigation pattern that actually landed Story 0 green after 5 prior failed attempts).
-**Status:** Proven end-to-end — Story 0 accepted with full `pnpm verify` green, 3 tests passing, zero `link:` regressions.
+**Status:** Historical — superseded by the harness runbook.
 
 ## Summary
 
