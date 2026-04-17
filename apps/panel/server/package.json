@@ -1,0 +1,17 @@
+{
+	"name": "@panel/server",
+	"private": true,
+	"type": "module",
+	"version": "0.0.0",
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run --passWithNoTests"
+	},
+	"dependencies": {
+		"@panel/shared": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "^5",
+		"vitest": "^4"
+	}
+}
