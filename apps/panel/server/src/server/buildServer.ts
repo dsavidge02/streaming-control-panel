@@ -4,6 +4,9 @@ import {
 	serializerCompiler,
 	validatorCompiler,
 } from "fastify-type-provider-zod";
+import { registerAuthRoutes } from "../routes/auth.js";
+import { registerOauthCallbackRoute } from "../routes/oauthCallback.js";
+import { registerLiveEventsRoute } from "../routes/liveEvents.js";
 import { loadConfig, type ServerConfig } from "./config.js";
 import { registerErrorHandler } from "./errorHandler.js";
 
@@ -24,6 +27,9 @@ export async function buildServer(options: BuildServerOptions = {}) {
 	app.setSerializerCompiler(serializerCompiler);
 	app.decorate("config", config);
 	registerErrorHandler(app);
+	registerAuthRoutes(app);
+	registerOauthCallbackRoute(app);
+	registerLiveEventsRoute(app);
 
 	return { app, db, config };
 }

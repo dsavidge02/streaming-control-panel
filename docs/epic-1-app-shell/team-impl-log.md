@@ -2,7 +2,7 @@
 
 **Skill:** `ls-team-impl-v2` (experimental — paired with `ls-tech-design-v2`)
 
-**state:** `BETWEEN_STORIES` — Story 1 accepted and committed 2026-04-17 (commits `7c0446d` fix(story-0) deferred findings + `e65d7f5` feat: Story 1 — Fastify server + central route wiring). Cumulative test count: 11 (3 shared + 8 server). Ready to reload skill and spawn Story 2. Prior state `STORY_ACTIVE` (phase: reviewing); reviewer ACCEPT verdict 21 PASS + 1 NOTE; three Minor dispositions recorded in §Story 1 Pre-Acceptance Receipt.
+**state:** `BETWEEN_STORIES` — Story 2 accepted and committed 2026-04-17. Cumulative test count: 18 live + 7 skipped (25 authored). Reviewer verdict PASS 0/0/0; two Minor + one bonus nit deferred per §Story 2 Pre-Acceptance Receipt. Team `epic-1-app-shell` recreated this fresh session (ephemeral across sessions per `reference_team_directory_ephemeral.md`). Ready to reload skill and spawn Story 3 (data-layer bootstrap — does NOT depend on Story 2; can run from current baseline). Prior accepted-and-committed: `7c0446d` fix(story-0) deferred findings + `e65d7f5` feat: Story 1.
 
 **Story 0 retry started 2026-04-17** in a fresh Claude Code session under the updated Windows Codex Hardening. Prior rollback context preserved in §Process Notes. Story 0 deferred findings #1 (PATHS shape) and #2 (gateExempt filename) resolved in the restart session prep phase — see §Story 0 Pre-Acceptance Receipt dispositions.
 
@@ -373,6 +373,10 @@ bash yourself (not delegated):
 
 **2026-04-17 · Windows hardening revised to sandbox-bypass.** Isolated test of `--dangerously-bypass-approvals-and-sandbox` showed 3/3 clean command execution with real paths and working network. Updated the §Windows Codex Hardening section to make the flag mandatory on every `codex exec` and `codex exec resume`. The long anti-PowerShell preamble has been replaced with a short 4-rule environment block (workspace-scoped reads, no `link:` deps, apply_patch full-file fallback, clean up lockfile backups). Trust tradeoff acceptable for this workflow: project is `trust_level = "trusted"`, prompts are internally composed, gpt-5.4 alignment is solid; the alternative produced silent correctness failures. Finding written up in `docs/research/ls-team-impl-windows-codex-findings.md` for upstream maintainers. Both templates updated. Cumulative test count reset to 0 (Story 0 not accepted). Fresh Claude Code session will restart Story 0 from clean baseline.
 
+**2026-04-17 · Story-boundary route-collision is a recurring failure class.** When a story registers a real route at `method+path`, any pre-existing test-file that synthetically registered a route at the same `method+path` via `registerRoute(app, { method, path, ... })` will start throwing on duplicate registration. Story 2 surfaced this with Story 1's `registerRoute.test.ts` case that used `{ method:'POST', path: PATHS.auth.login }` to exercise "state-mutating + exempt + Origin preHandler ordering" — Story 2's new real `POST /auth/login` exempt route collided. Fix: change the synthetic method to a non-colliding verb that preserves intent (Story 2 used `DELETE`; any state-mutating method that isn't also a live real route works). Codex caught this autonomously during iter-2's fix cycle. Applies prospectively: every story adding a route should scan prior story test files for `registerRoute(app, { method, path: <same> })` patterns and pre-empt collisions during authoring. Added to §Materialized Handoff Templates checklist so implementer task sections cover this.
+
+**2026-04-17 · Ambient-`.d.ts` bridge pattern for staged-delivery stories.** Story 2's test files reference `sealFixtureSession()` in `.skip`-wrapped cases that un-skip in Story 4. Rather than typecheck-as-`any` or import a nonexistent module, Codex authored `apps/panel/server/src/test/sealFixtureSession.d.ts` containing a single-line ambient: `export declare function sealFixtureSession(): Promise<string>`. Effects: (a) typecheck stays green in Story 2; (b) Story 4 can drop a matching-signature `.ts` next to it with zero test-file edits; (c) the `.d.ts` itself encodes Story 4's interface commitment — any Story 4 signature drift surfaces immediately. Promote this pattern to every future staged-delivery story where test files reference a not-yet-implemented module. If Story 4 ships the real `.ts` and the `.d.ts` still exists, Story 4 should delete the `.d.ts` as part of its cleanup.
+
 **2026-04-17 · Story 1 impl attempt 1 — full-session PowerShell spawn wall; orchestrator auto-response-collection needs refinement.** First Codex `exec` for Story 1 (session `019d9c45-a893-7b30-bd62-d72c6ddcc65f`, prompt `C:/Users/dsavi/AppData/Local/Temp/codex-story-1-impl-prompt.md`, 18KB with delivery marker + env rules + 11 deliverables) exited cleanly from a wrapper perspective (no exception, 31 JSONL events) but EVERY command in the session — 12/12 — failed with `exit_code -1073741502` STATUS_DLL_INIT_FAILED and empty stdout/stderr. Codex contractually aborted (did not fabricate, did not emit `link:` fallbacks — exactly the hardened behavior we wanted) and its final `agent_message` correctly said "blocked." A standalone `codex exec "ping"` immediately afterward returned `pong` cleanly (session `019d9c4c-7d96-7431-a4b3-c2d98a7e594d`), so the spawn environment recovers per-session — this was a whole-session cold-start wall, not a transient per-command flake.
 
 **Refinement needed before any future wrapper claims "auto-collect Codex response":**
@@ -557,3 +561,94 @@ Zero findings routed for implementer rework. Reviewer's independent `pnpm red-ve
 - Warm cache inheritance: Story 2 Codex prompts should mirror Story 1's reading order verbatim so the 3.64M-token cached prefix carries over.
 
 **Boundary inventory (unchanged from §Boundary Inventory; Story 1 had no external-boundary deltas).** Twitch OAuth stub status advances to "stub body present" in Story 2 (501 NOT_IMPLEMENTED); Helix/EventSub still not-started; keychain still not-started; SQLite still integrated only via `install_metadata` planning (Story 3); SSE stub cadence lands in Story 2; Electron shell still not started; GitHub Actions CI still in partial state (flips to pnpm at Story 9). Session-cookies boundary still not-started (Story 4 lands the real flow).
+
+### Story 2 — Pre-Acceptance Receipt (2026-04-17)
+
+**CLI evidence references** (3 impl Codex sessions + 1 reviewer Codex session, all via `drive-until-green.sh` harness):
+
+- Impl iter 1 — thread `019d9cde-6bb9-71f1-b724-04fff2c2e589`; JSONL `codex-story-2-impl.iter-1.jsonl` (290KB). Wrapper verdict REAL_ERROR (1 per-command flake recovered on attempt 1, real error on attempt 2 — likely format/typecheck mid-session). Driver composed fix prompt for iter 2.
+- Impl iter 2 — thread `019d9ce5-cfd5-7521-bb65-466f12aa42d6`; JSONL `codex-story-2-impl.iter-2.jsonl` (17KB). Wrapper verdict OK; ground-truth gate still red (exit 1). Driver composed fix prompt for iter 3.
+- Impl iter 3 — thread `019d9ce6-cd87-7d20-8b4b-5011b9d62dac`; JSONL `codex-story-2-impl.iter-3.jsonl` (34KB). Wrapper verdict REAL_ERROR; ground-truth gate GREEN (exit 0). Driver correctly prioritized ground-truth per rule 6; final report generated.
+- Reviewer Codex spec-compliance pass — thread `019d9d3a-2399-7a93-8164-12c8dbc41e4d`; JSONL `codex-story-2-review.iter-1.jsonl`; incremental findings `codex-story-2-findings.md`. Verdict: PASS 0/0/0. Driver report: `codex-story-2-review.impl-report.md`.
+- Flakes preserved: 0 walled attempts, 1 per-command `-1073741502` flake on iter 1 attempt 1 (recovered on attempt 2 per rule 9). Delivery marker `DELIVERY_CHECK_MARKER_ECHO_7077` observed 11 times across the 5 JSONLs (impl iter-1/2/3 + flake-attempt-1 + review iter-1).
+
+**Top findings and dispositions** (reviewer's consolidated list — zero Critical, zero Major, two Minor, three bonus observations):
+
+| # | Finding | Severity | Disposition | Reasoning |
+|---|---------|----------|-------------|-----------|
+| 1 | SSE wire format uses string concatenation (`"event: heartbeat\ndata: " + JSON.stringify(...) + "\n\n"`) in `liveEvents.ts:20-24` instead of a template literal | Minor | **accepted-risk, defer** | Style-only; no functional impact. Can revisit in Epic 4a when real event producers land. |
+| 2 | `baseSseEventSchema` (Story 0 scaffold placeholder) still present in `shared/src/sse/events.ts:3-6` alongside the now-canonical `sseEventSchema` | Minor | **defer** | Story 0 already dispositioned this as accepted-risk (finding #4). No incremental cost to leave it for a future cleanup pass. |
+| 3 | Test files hardcode `"/oauth/callback"` literals in some assertions instead of `PATHS.oauth.callback` (`oauthCallback.test.ts:13,35,54,75`) | bonus — not flagged as a Minor | **defer** | Consistency nit; does not affect correctness. Too small to round-trip. |
+
+Zero findings routed for implementer rework. Reviewer's independent `pnpm red-verify` + `pnpm verify` matched both the driver's in-session gate and the orchestrator's own run (triple confirmation).
+
+**Reviewer's "what else did you notice" — persistence-worthy observations:**
+
+1. `sealFixtureSession.d.ts` bridge is elegantly designed: skipped tests use `await import('../test/sealFixtureSession.js')` (dynamic), not top-level. The `.d.ts` only satisfies typecheck today; Story 4 lands a runtime `.ts` with matching signature and TS resolves it naturally. Zero test-file edits needed when un-skipping.
+2. **Story-boundary route-collision pattern.** Once a route `method+path` becomes real, synthetic test registrations at the same `method+path` collide. Story 2's fix: `POST → DELETE` in `registerRoute.test.ts` (preserves "state-mutating + exempt + Origin preHandler ordering" intent without colliding with the new real `POST /auth/login`). Watch for this on every story that adds routes. Added to §Process Notes.
+3. Codex's APPEND obedience was clean: `baseSseEventSchema` was preserved (rule 7 held); `buildServer.ts` diff is pure APPEND (3 imports + 3 register calls); `shared/src/index.ts` APPEND of `./sse/events.js` export.
+4. Live tests validate the error envelope via `errorEnvelopeSchema.safeParse(payload).success === true` rather than `.toMatchObject({...})`. This catches Zod-schema drift, not just field presence — good defensive style.
+5. `sessionPreHandler` stub is unconditionally throwing (Story 1 stub). Story 4's body replacement keeps the signature + module path; no test-file changes needed for the `/live/events` cluster.
+6. Vitest "1 skipped file" is `auth.test.ts` (all 4 tests `it.skip`, so the suite counts as skipped). Expected and correct, not a misfire.
+7. No `.only` / `.todo` leftovers; grep clean.
+8. Biome/format/lint/typecheck clean across all 3 packages — suggests the implementer's inner iter-3 re-ran `pnpm verify` before declaring done.
+
+**Exact story gate commands run by orchestrator** (ground truth, ran 2026-04-17T21:05 local):
+- `pnpm red-verify` → exit 0 (40 files clean via biome; 3 packages typecheck clean)
+- `pnpm verify` → exit 0 (18 tests live cumulative: 3 shared from Story 0 + 15 server [2 buildServer + 3 registerRoute + 3 errorHandler + 3 oauthCallback + 4 liveEvents + 0 live in auth.test.ts]; 7 skipped; 22 total authored)
+- `grep -rn '"link:' apps/*/package.json package.json` → 0 matches (no dep-graph regression)
+- `git diff --stat` across all touched paths: `buildServer.ts` (+6 insertions, APPEND only); `registerRoute.test.ts` (4 lines changed = 2-line POST→DELETE rename, no coverage weakening); `docs/epic-1-app-shell/team-impl-log.md` (orchestrator's own state edit). No overwrite regressions.
+- `grep -rn '\.skip' apps/panel/server/src/routes/` → 7 hits across 3 files (`auth.test.ts` 4, `liveEvents.test.ts` 2, `oauthCallback.test.ts` 1); all carry TC tags and Story-4 dependency citations per reviewer's file-level audit.
+- Delivery marker present in every Codex JSONL.
+
+**UI spec compliance:** N/A for Story 2 (activates at Story 5).
+
+**Open risks:** none blocking; two Minor deviations + one bonus consistency nit dispositioned above with their venues identified.
+
+### Story 2 Orchestration Observations (captured for v2-findings + future handoffs)
+
+1. **"Implementer silent post-completion" is now a confirmed PATTERN, not a one-off.** Story 1's implementer went silent; orchestrator had to read the driver's `impl-report.md` from disk. Story 2's implementer did the same — silent for ~83 minutes after the driver exited GREEN. In both cases the harness's auto-generated `impl-report.md` saved the cycle, but the team-lead's handoff discipline (fresh reviewer, CLI evidence, etc.) depends on a prompt §Step 6 relay. Mitigation proposal captured for next template rewrite: implementer should invoke the driver with `run_in_background: true` and use the `Monitor` tool on the driver log, which would force a new turn per stdout line. A periodic `[drive] heartbeat <iter> @ <epoch>` line emitted by `drive-until-green.sh` every ~N seconds would turn this into a structural keepalive, bypassing the "agents forget to report back" failure mode entirely. Orchestrator also failed at its end — treated idle bursts as routine turn boundaries per Finding 002 and did not nudge for ~83 minutes; user had to prompt. The orchestrator-side nudge threshold ("20 min of silence during long runs") was defined but not actually enforced by any timer, because Claude Code agents only have turn boundaries, not wall-clock alarms. The Monitor-based keepalive closes both halves of the gap.
+
+2. **Codex's 3-iteration ladder was clean and expected.** Iter 1 hit a per-command flake + real error (likely typecheck surfacing `@types/node` or registerRoute.test.ts's POST→DELETE need); iter 2 produced valid changes (wrapper OK) but gate still red (something the fix prompt surfaced); iter 3 wrapper REAL_ERROR but gate GREEN — exactly the harness-designed shape where wrapper counts intermediate failures but ground-truth gate is authoritative. No walls, no flake exhaustion. The outer loop did its job.
+
+3. **Story-boundary route-collision pattern.** When Story 2 landed a real `POST /auth/login` exempt route, Story 1's `registerRoute.test.ts` case that used `{ method:'POST', path: PATHS.auth.login }` as a synthetic "state-mutating exempt + Origin preHandler ordering" test started failing (duplicate route registration). Codex caught it during iter-2's fix cycle and changed the synthetic method to `DELETE` (preserves intent, eliminates collision). Worth adding to §Process Notes as a recurring failure class: any story adding a route needs to scan Story 1's test file (and successor test files) for prior synthetic `registerRoute` uses at the same `method+path`. Added below.
+
+4. **Warm-cache inheritance worked.** Reviewer's Codex pass continued the cached-prefix pattern from Story 1; implementer's iter-2 and iter-3 reused the prefix from iter-1 (same reading order, same env-rules block prepended by `compose-prompt.sh`). No token-accounting numbers captured this run, but iteration 2 + 3 completed in under 4 minutes combined vs. iter-1's ~8 minutes — consistent with prompt-cache activation.
+
+5. **`sealFixtureSession.d.ts` bridge is the right discipline for staged-delivery stories.** Story 4's test-plan commitment is to un-skip 7 tests. If Story 2's tests had tried to import a runtime module that doesn't exist, typecheck would have to error-or-any'd the call sites. Codex's choice — a one-line ambient `.d.ts` with the exact signature Story 4 must match — keeps typecheck green now, constrains Story 4's interface, and needs zero test edits on un-skip. Promote this pattern to the team-impl-log for all staged-delivery stories: when tests reference a module whose implementation lands in a future story, author an ambient `.d.ts` stub with the expected signature.
+
+### Story 2 — Transition Checkpoint (accepted + committed 2026-04-17)
+
+**Cumulative test count after Story 2: 18 live + 7 skipped = 25 authored.** Breakdown: 3 shared (Story 0 unchanged) + 15 server (Story 1's 8: 2 buildServer + 3 registerRoute + 3 errorHandler; Story 2's 7 live: 3 oauthCallback + 4 liveEvents + 0 in auth.test.ts). Story 3 should add data-layer tests per `test-plan.md` Chunk 3; the cumulative floor is ≥ 18 live (and the 7 skips remain inert until Story 4 un-skips them).
+
+**Problems encountered:**
+1. Implementer silent ~83 min post-driver-exit (second occurrence of the Story 1 pattern; orchestrator also silent during that window — neither side's "10-min cadence" discipline engaged).
+2. Story-boundary route-collision surfaced in iter-2 fix cycle — Codex resolved in-session (POST→DELETE rename in `registerRoute.test.ts`).
+3. `sealFixtureSession` reference in Story 2 test files needed a type declaration bridge (`sealFixtureSession.d.ts`) to keep typecheck green ahead of Story 4's real implementation. Not anticipated in Story 2's DoD; Codex added it autonomously as a bridge.
+
+**Impact and resolution:** problem 1 became a v2-findings / template-hardening candidate (Monitor-tool-based keepalive proposal); problems 2 and 3 were absorbed during iteration without orchestrator intervention. Story 2 ships green; zero regressions in Story 0/1 files; `buildServer.ts` APPEND discipline held; no link: regressions. Boundary inventory: Twitch OAuth stub now has `501 NOT_IMPLEMENTED` bodies (advanced from "path reserved"); SSE stub now emits heartbeat cadence (advanced from "path reserved"); session-cookie boundary still not-started (Story 4).
+
+**Recommendations for Story 3 (data-layer bootstrap, blocked-by: Story 0 only):**
+- Story 3 does NOT depend on Story 2. It can run from the current baseline unchanged.
+- Do NOT wire the real DB path into `server/config.ts` yet unless tech-design-server.md §Server Binding explicitly says Story 3 owns it (my read: Story 3 introduces `openDatabase(path)` + `install_metadata` migration; `resolveUserDataDbPath()` wiring lands in Story 3, threading through `loadConfig`).
+- Story 1's Minor #3 ("databasePath returns `process.cwd()`") is a Story 3 deliverable — remind implementer the fix belongs in Story 3's scope.
+- Prompt cache prefix: keep the same reading order so the ~3.6M cached tokens still apply.
+
+**Recommendations for Story 4 (when it comes — Story 3 is next):**
+- Un-skip exactly the 7 tests enumerated in Story 2's §Pre-Acceptance Receipt (4 auth + 1 oauthCallback + 2 liveEvents). Story 4 DoD should cross-reference this list.
+- Replace `apps/panel/server/src/test/sealFixtureSession.d.ts` with a real `sealFixtureSession.ts` whose exported signature matches `(): Promise<string>` exactly — no test-file edits should be needed.
+- The `baseSseEventSchema` accepted-risk from Story 0 now has a second deferred disposition (Story 2 reviewer Minor #2). Story 4 is a natural cleanup venue if scope allows; otherwise promote to pre-verification cleanup.
+
+**Boundary inventory after Story 2:**
+
+| Boundary | Status | Owning Story | Change from Story 1? |
+|----------|--------|--------------|----------------------|
+| Twitch OAuth (`/auth/login`) | **stub body present** (501 NOT_IMPLEMENTED) | Story 2 → Story 4 (real Origin gate) → Epic 2 (real flow) | advanced |
+| Twitch OAuth callback (`/oauth/callback`) | **stub body present** (501 NOT_IMPLEMENTED) | Story 2 → Epic 2 | advanced |
+| Live SSE producers | **stub cadence present** (heartbeat every 15s; session-gated) | Story 2 → Story 4 (real session gate un-skips) → Epic 4a (real producers) | advanced |
+| Twitch Helix / EventSub | not started | Epic 3 / Epic 4a | — |
+| OS keychain (`keytar`) | not started | Epic 2 | — |
+| SQLite filesystem | integrated (planning only) | Story 3 | — |
+| Electron shell | not started | Story 7 | — |
+| GitHub Actions CI | partial (docs-fallback) | Story 9 | — |
+| Session cookies (`iron-session`) | not started | Story 4 | — |

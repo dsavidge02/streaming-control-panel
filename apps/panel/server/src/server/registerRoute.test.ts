@@ -66,14 +66,14 @@ describe("registerRoute", () => {
 
 		try {
 			registerRoute(app, {
-				method: "POST",
+				method: "DELETE",
 				url: PATHS.auth.login,
 				exempt: true,
 				handler: async () => ({ ok: true }),
 			});
 
 			const response = await app.inject({
-				method: "POST",
+				method: "DELETE",
 				url: PATHS.auth.login,
 			});
 
