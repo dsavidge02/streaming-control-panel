@@ -2,7 +2,7 @@
 
 **Skill:** `ls-team-impl-v2` (experimental — paired with `ls-tech-design-v2`)
 
-**state:** `BETWEEN_STORIES` — Story 2 accepted and committed 2026-04-17. Cumulative test count: 18 live + 7 skipped (25 authored). Reviewer verdict PASS 0/0/0; two Minor + one bonus nit deferred per §Story 2 Pre-Acceptance Receipt. Team `epic-1-app-shell` recreated this fresh session (ephemeral across sessions per `reference_team_directory_ephemeral.md`). Ready to reload skill and spawn Story 3 (data-layer bootstrap — does NOT depend on Story 2; can run from current baseline). Prior accepted-and-committed: `7c0446d` fix(story-0) deferred findings + `e65d7f5` feat: Story 1.
+**state:** `BETWEEN_STORIES` — Story 3 accepted and committed 2026-04-17. Cumulative test count: 26 live + 7 skipped (33 authored). Reviewer verdict PASS with one Critical finding (pnpm.onlyBuiltDependencies missing) empirically reproduced and fixed in-cycle. Ready to reload skill and spawn Story 4 (server-side gate + Origin + session + cookie defaults — the story that un-skips Story 2's 7 skipped tests). Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Team `epic-1-app-shell` recreated again this fresh session (ephemeral per `reference_team_directory_ephemeral.md`); ls-team-impl-v2 skill reloaded; Finding 008 standalone-subagent trap explicitly guarded against. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred fixes) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Cumulative test count entering Story 3: 18 live + 7 skipped; Story 3 should add 8 live → target 26 live cumulative.
 
 **Story 0 retry started 2026-04-17** in a fresh Claude Code session under the updated Windows Codex Hardening. Prior rollback context preserved in §Process Notes. Story 0 deferred findings #1 (PATHS shape) and #2 (gateExempt filename) resolved in the restart session prep phase — see §Story 0 Pre-Acceptance Receipt dispositions.
 
@@ -616,6 +616,95 @@ Zero findings routed for implementer rework. Reviewer's independent `pnpm red-ve
 4. **Warm-cache inheritance worked.** Reviewer's Codex pass continued the cached-prefix pattern from Story 1; implementer's iter-2 and iter-3 reused the prefix from iter-1 (same reading order, same env-rules block prepended by `compose-prompt.sh`). No token-accounting numbers captured this run, but iteration 2 + 3 completed in under 4 minutes combined vs. iter-1's ~8 minutes — consistent with prompt-cache activation.
 
 5. **`sealFixtureSession.d.ts` bridge is the right discipline for staged-delivery stories.** Story 4's test-plan commitment is to un-skip 7 tests. If Story 2's tests had tried to import a runtime module that doesn't exist, typecheck would have to error-or-any'd the call sites. Codex's choice — a one-line ambient `.d.ts` with the exact signature Story 4 must match — keeps typecheck green now, constrains Story 4's interface, and needs zero test edits on un-skip. Promote this pattern to the team-impl-log for all staged-delivery stories: when tests reference a module whose implementation lands in a future story, author an ambient `.d.ts` stub with the expected signature.
+
+### Story 3 — Pre-Acceptance Receipt (2026-04-17)
+
+**CLI evidence references** (3 Codex sessions: 2 implementer + 1 reviewer + 1 fix-round):
+
+- Impl iter 1 — thread `019d9d60-b8d6-7a52-a2a8-6b379aa0edc3`; JSONL `codex-story-3-impl.iter-1.jsonl`. Wrapper verdict REAL_ERROR; Codex completed a session-wide wall on attempt 1 (every PowerShell child `-1073741502` except the initial marker); wrapper correctly classified FLAKE_DETECTED and relaunched on attempt 2, which cleared. Iter 1 did the bulk of implementation: installed deps, wrote `db.ts`, `installMetadata.ts`, baseline SQL, `_journal.json`, `tempSqlitePath.ts`, `db.test.ts`; modified `buildServer.ts`, `config.ts`, both package.jsons, README. Codex hit and self-diagnosed two real issues: (a) pnpm 10's `onlyBuiltDependencies` silently blocking `better-sqlite3`'s native build (the wrapper said `pnpm install` exit 0 but the `.node` binary never landed), and (b) Drizzle 0.45's requirement for `--> statement-breakpoint` between multi-statement migration files. Codex resolved (a) by running `pnpm run install` inside the package directory directly and (b) by editing the SQL to include the breakpoint marker. In-session `pnpm red-verify` + `pnpm verify` both exited 0.
+- Impl iter 2 — thread `019d9d68-6ee8-7370-accc-78779dbcb6f4`; JSONL `codex-story-3-impl.iter-2.jsonl`. Iter 1's in-session gate was deceptive: the driver's authoritative post-session gate caught 3 biome format violations (CRLF trailing newline in server/package.json, indentation in db.test.ts:154-157, line-wrap in buildServer.ts:24) plus one typecheck failure (`noUncheckedIndexedAccess` on `PRAGMA user_version` destructure at db.test.ts:40). Driver composed a surgical fix prompt, iter 2 applied `biome format --write` to the 3 files and added a null-guard on the pragma result. Ground-truth gate after iter 2: `pnpm red-verify` exit 0, `pnpm verify` exit 0.
+- Reviewer Codex spec-compliance — thread `019d9dab-8b62-7e62-bfea-136b14bebaa2`; JSONL `codex-story-3-review.iter-1.jsonl`; findings captured at `codex-story-3-findings.md`. Reviewer took ~9 minutes in the pre-Codex reflection phase (reading 9 artifacts: harness, tech-design index + server companion, test-plan, epic, story, coverage, impl-report, and the 10 implementation files). Codex's review executed `pnpm --filter @panel/server test -- src/data/db.test.ts` directly (dynamic verification of the 8 tests in isolation), confirmed all 6 TCs + 2 non-TC present, and flagged one Major: missing `pnpm.onlyBuiltDependencies` block in root `package.json` — without which a fresh `pnpm install` silently skips building `better-sqlite3`'s native binding.
+- Fix-round Codex — thread `019d9db5-16b0-7f51-8bb2-f04594e16bc9`; JSONL `codex-story-3-fix.iter-1.jsonl`; driver report `codex-story-3-fix.impl-report.md`. Driver exit 0 GREEN iter 1/3. Reviewer's Opus architectural review escalated the finding from Major → Critical after empirically reproducing it: `pnpm install --force --no-frozen-lockfile` emitted "Ignored build scripts: better-sqlite3@12.9.0, electron-winstaller@5.4.0, electron@41.2.1" and subsequent tests failed 22/30 on missing bindings. Fix: reviewer had Codex add a top-level `pnpm.onlyBuiltDependencies` array to root `package.json` containing `better-sqlite3`, `electron`, `electron-winstaller` (alphabetized). No other file touched. Post-fix `pnpm install --force --no-frozen-lockfile` completes with `electron-builder install-app-deps` firing and no ignored-scripts warning.
+
+**Top findings and dispositions:**
+
+| # | Finding | Severity | Disposition | Reasoning |
+|---|---------|----------|-------------|-----------|
+| 1 | Missing `pnpm.onlyBuiltDependencies` allowlist for native builds (pnpm 10 silent-skip) | **Critical** (empirical) | **fixed** | Reviewer reproduced failure on clean `pnpm install`; green state was an artifact of the implementer's in-cycle manual rebuild. Fix applied in-cycle via Codex; gates re-green post-fix. |
+
+Zero Major, zero Minor, zero accepted-risk, zero defer.
+
+**Reviewer's "what else did you notice":**
+
+1. `tempSqlitePath.ts` uses `os.tmpdir()` which resolves to `C:\Users\dsavi\AppData\Local\Temp\` on Windows — the finding-004-safe path. Good choice (not a finding).
+2. `resolveUserDataDbPath` non-Electron fallback is `os.tmpdir()/panel-dev.sqlite`. Pure-Node dev contexts would create a real dev DB there; `buildTestServer` always forces `inMemoryDb: true` so tests are safe. If a future story adds a non-Electron dev runner, surface the fallback in docs (not a Story 3 issue).
+3. `drizzle-kit` is NOT present as a devDependency — the baseline SQL + `_journal.json` were hand-crafted. Drizzle's runtime `migrate()` only needs the SQL files + journal, so the migration system works. If a future story needs `drizzle-kit generate`, add it then.
+4. `installMetadata` Drizzle schema object is exported but not yet consumed — scaffolding for later epics that will query install_metadata.
+5. `drizzle/meta/_journal.json` version `"7"` + entry version `"6"` + `breakpoints: true` matches drizzle-kit's current output format and correctly signals the migrator to honor `--> statement-breakpoint`.
+
+**Exact story gate commands run by orchestrator** (ground truth, ran 2026-04-17T19:20 local):
+- `pnpm red-verify` → exit 0 (biome format: 45 files clean; biome lint: 45 files clean; typecheck across 3 packages clean)
+- `pnpm verify` → exit 0 (server: 23 passed | 7 skipped (30 total); shared: 3 passed; client: 0 tests [passWithNoTests])
+- `grep -rn '"link:' apps/*/package.json package.json` → 0 matches (no dep-graph regression)
+- `ls pnpm-lock.yaml*` → only `pnpm-lock.yaml` (no transient backups)
+- `git diff --stat`: `README.md` (+4), `server/package.json` (+3), `buildServer.ts` (+6), `config.ts` (+22), `package.json` (+13, includes reviewer's onlyBuiltDependencies fix), `pnpm-lock.yaml` (+2911), `team-impl-log.md` (orchestrator state edit)
+- New (untracked → committed): `apps/panel/server/drizzle/0001_install_metadata.sql`, `apps/panel/server/drizzle/meta/_journal.json`, `apps/panel/server/src/data/db.ts`, `apps/panel/server/src/data/db.test.ts`, `apps/panel/server/src/data/schema/installMetadata.ts`, `apps/panel/server/src/test/tempSqlitePath.ts`
+
+**UI spec compliance:** N/A for Story 3 (activates at Story 5).
+
+**Open risks:** none blocking; zero items deferred.
+
+### Story 3 Orchestration Observations (captured for v2-findings + future handoffs)
+
+1. **"In-session gate ≠ ground-truth gate" is a recurring failure class.** Story 2 was lucky; Story 3 surfaced three instances:
+   - Iter 1: Codex's in-session `pnpm verify` exit 0 hid 3 biome format issues + 1 typecheck failure. Driver's authoritative post-session gate caught them.
+   - Iter 1 secondary: Codex's `pnpm verify` passed because the native binding had been manually built mid-session. Reviewer caught this empirically by running `pnpm install --force --no-frozen-lockfile` from a clean state.
+   - The harness is robust here: the driver's ground-truth gate is authoritative, and multi-round review (reviewer Codex + reviewer's own Opus architectural pass + empirical reproduction) caught what single-pass review would have missed.
+   Lesson for future stories: reviewer's empirical reproduction of native-build / install pipeline claims is essential for any story that touches `postinstall`, `pnpm.onlyBuiltDependencies`, or native modules.
+
+2. **Session-wide walls still a recurring pattern on Windows.** Story 3's iter 1 attempt 1 hit a clean wall (marker succeeded, every subsequent PowerShell command flaked with `-1073741502`). Wrapper correctly classified FLAKE_DETECTED and relaunched on attempt 2, which cleared without retry. Finding 009 behavior held. Zero walled attempts preserved in the final artifact set because attempt 1 was preserved as `iter-1.jsonl` and attempt 2 overwrote (both are the same stem). Budget impact: ~4 minutes spent walled; acceptable.
+
+3. **pnpm 10's `onlyBuiltDependencies` is a new Windows-environment gotcha.** Before pnpm 10, native modules built on install by default. Pnpm 10 flipped this to an opt-in allowlist for supply-chain security, which silently breaks native-module pipelines. Project memory should capture this: **any native-dep addition in this repo requires adding the package to root `package.json` `pnpm.onlyBuiltDependencies`**. Epic 2's keytar (OS keychain) and any future Epic 3+ native deps will need the same treatment.
+
+4. **Reviewer empirical reproduction as standard practice.** The Major → Critical severity escalation only happened because the reviewer ran `pnpm install --force --no-frozen-lockfile` themselves to verify the claim rather than trusting code-only inspection. This should be standard practice for stories with install-pipeline claims. Adding to template reminders for future review handoffs.
+
+5. **Implementer silent post-driver-exit, take 3.** Story 1 + Story 2 had it; Story 3 repeated the pattern but under different conditions. Driver exited ~22:31 local; implementer SendMessage relay came at 22:34 after an orchestrator nudge. ~3 minutes of silence this time (much better than 83-min Story 2) — possibly because the implementer's own `run_in_background: true` + Monitor set-up from the handoff template kept them more engaged. Orchestrator-side Monitor caught the GATES GREEN event in real time, so the cycle wasn't blocked; nudge was for completeness. Pattern not fully eliminated; a driver-emitted heartbeat every 30-60s would close this entirely.
+
+6. **Reviewer spawn → Codex JSONL lag was ~9 minutes.** Expected for a dual review — reviewer reads 9 artifacts + writes reflection before composing Codex prompt. Not a concern; Monitor's periodic heartbeat every 2 minutes reassured the orchestrator the reviewer was still alive during the silent window.
+
+### Story 3 — Transition Checkpoint (accepted + committed 2026-04-17)
+
+**Cumulative test count after Story 3: 26 live + 7 skipped = 33 authored.** Breakdown: 3 shared (Story 0 unchanged) + 23 server (Story 1's 8 + Story 2's 7 live + Story 3's 8). Skipped tally unchanged at 7 (Story 4 un-skips). Story 4 should add the un-skips + cookie/session tests per `test-plan.md` Chunk 4.
+
+**Problems encountered:**
+1. Session-wide wall on iter 1 attempt 1 (wrapper-recovered).
+2. In-session gate deception: biome format + typecheck failures passed Codex's own `pnpm verify` but failed the driver's post-session gate.
+3. Native-build silent-skip: `pnpm install` exit 0 without building `better-sqlite3`'s Node-ABI binding due to pnpm 10's `onlyBuiltDependencies` default.
+4. Drizzle 0.45 migration SQL required `--> statement-breakpoint` between multi-statement files — omitted at first write, caught by test execution.
+5. Implementer silent ~3 min post-driver-exit (third occurrence; orchestrator-side Monitor made this non-blocking).
+
+**Impact and resolution:** all five absorbed in-cycle. Problems 1, 2, 4: Codex + harness resolved without orchestrator touching code. Problem 3: caught by reviewer empirical reproduction, Codex applied the fix, gates re-green post-fix. Problem 5: orchestrator nudge cleared in under a minute; impl-report already on disk. Boundary inventory: SQLite filesystem advanced from "planning only" to "integrated" (Story 3 ships `openDatabase` + `applyMigrations` + baseline `install_metadata` schema); Twitch OAuth stubs unchanged; keychain still not-started; SSE stubs unchanged; Electron shell still not-started; GitHub Actions CI still partial; session-cookies still not-started.
+
+**Recommendations for Story 4 (server-side gate + Origin + session + cookies):**
+- Un-skip exactly the 7 tests enumerated in Story 2's §Pre-Acceptance Receipt (4 auth + 1 oauthCallback + 2 liveEvents). Story 4 DoD cross-references this list.
+- Replace `apps/panel/server/src/test/sealFixtureSession.d.ts` with a real `sealFixtureSession.ts` whose exported signature matches `(): Promise<string>` exactly — no test-file edits should be needed.
+- The `baseSseEventSchema` accepted-risk from Story 0 now has a second deferred disposition (Story 2 reviewer Minor #2). Story 4 is a natural cleanup venue if scope allows; otherwise promote to pre-verification cleanup.
+- `iron-session@8` adds as a dependency. Verify it does NOT need `pnpm.onlyBuiltDependencies` — it's pure JS (no native). Only add to allowlist if `pnpm install` shows it in "Ignored build scripts".
+- Prompt cache prefix: keep the same reading order; Story 3's cache prefix should still apply.
+
+**Boundary inventory after Story 3:**
+
+| Boundary | Status | Owning Story | Change from Story 2? |
+|----------|--------|--------------|----------------------|
+| Twitch OAuth (`/auth/login`) | **stub body present** (501 NOT_IMPLEMENTED) | Story 2 → Story 4 (real Origin gate) → Epic 2 (real flow) | — |
+| Twitch OAuth callback (`/oauth/callback`) | **stub body present** (501 NOT_IMPLEMENTED) | Story 2 → Epic 2 | — |
+| Live SSE producers | **stub cadence present** (heartbeat every 15s; session-gated) | Story 2 → Story 4 (real session gate un-skips) → Epic 4a (real producers) | — |
+| SQLite filesystem | **integrated** (`install_metadata` baseline + openDatabase + applyMigrations + resolveUserDataDbPath) | Story 3 | **advanced** (was planning-only) |
+| Twitch Helix / EventSub | not started | Epic 3 / Epic 4a | — |
+| OS keychain (`keytar`) | not started | Epic 2 | — |
+| Electron shell | not started | Story 7 | — |
+| GitHub Actions CI | partial (docs-fallback) | Story 9 | — |
+| Session cookies (`iron-session`) | not started | Story 4 | — |
 
 ### Story 2 — Transition Checkpoint (accepted + committed 2026-04-17)
 

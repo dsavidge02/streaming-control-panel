@@ -9,11 +9,14 @@
 	},
 	"dependencies": {
 		"@panel/shared": "workspace:*",
+		"better-sqlite3": "^12.9.0",
+		"drizzle-orm": "^0.45.2",
 		"fastify": "^5.8.5",
 		"fastify-type-provider-zod": "^6.1.0",
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {
+		"@types/better-sqlite3": "^7.6.13",
 		"@types/node": "^24.12.2",
 		"typescript": "^5",
 		"vitest": "^4"

@@ -4,6 +4,7 @@ import {
 	serializerCompiler,
 	validatorCompiler,
 } from "fastify-type-provider-zod";
+import { applyMigrations, openDatabase } from "../data/db.js";
 import { registerAuthRoutes } from "../routes/auth.js";
 import { registerOauthCallbackRoute } from "../routes/oauthCallback.js";
 import { registerLiveEventsRoute } from "../routes/liveEvents.js";
@@ -20,7 +21,10 @@ export async function buildServer(options: BuildServerOptions = {}) {
 		...loadConfig(),
 		...options.config,
 	};
-	const db = options.inMemoryDb === true ? ":memory:-stub" : null;
+	const dbFilePath =
+		options.inMemoryDb === true ? ":memory:" : config.databasePath;
+	const db = await openDatabase(dbFilePath);
+	await applyMigrations(db);
 	const app = Fastify({ logger: false }).withTypeProvider<ZodTypeProvider>();
 
 	app.setValidatorCompiler(validatorCompiler);

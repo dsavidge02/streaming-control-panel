@@ -14,10 +14,21 @@
 		"red-verify": "pnpm format:check && pnpm lint && pnpm typecheck",
 		"verify": "pnpm red-verify && pnpm test",
 		"green-verify": "pnpm verify && pnpm guard:no-test-changes",
-		"verify-all": "pnpm verify && pnpm test:e2e"
+		"verify-all": "pnpm verify && pnpm test:e2e",
+		"postinstall": "electron-builder install-app-deps"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2",
+		"@electron/rebuild": "^4.0.3",
+		"electron": "^41.2.1",
+		"electron-builder": "^26.8.1",
 		"typescript": "^5"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"better-sqlite3",
+			"electron",
+			"electron-winstaller"
+		]
 	}
 }

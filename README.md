@@ -13,3 +13,7 @@ Streaming Control Panel is a solo-Twitch-streamer desktop application for channe
 ```sh
 pnpm install
 ```
+
+## Troubleshooting
+
+If `pnpm start` fails with `NODE_MODULE_VERSION` mismatch after switching Electron versions or rebuilding, run `pnpm rebuild` to re-invoke the postinstall and rebuild `better-sqlite3` against the current Electron ABI.
