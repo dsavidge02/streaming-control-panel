@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Detect verification mode
+        id: detect
+        shell: bash
+        run: |
+          if [[ -f package.json ]] && node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json', 'utf8')); process.exit(pkg.scripts && pkg.scripts.verify ? 0 : 1)"; then
+            echo "mode=pnpm" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=docs" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up pnpm
+        if: steps.detect.outputs.mode == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10'
+
+      - name: Set up Node with pnpm cache
+        if: steps.detect.outputs.mode == 'pnpm'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.detect.outputs.mode == 'pnpm'
+        run: pnpm install --frozen-lockfile
+
+      - name: Run verify
+        if: steps.detect.outputs.mode == 'pnpm'
+        run: pnpm verify
+
+      - name: Verify docs-only scaffold
+        if: steps.detect.outputs.mode == 'docs'
+        shell: bash
+        run: |
+          test -f docs/prd.md
+          test -f docs/architecture.md
+          test -f docs/epic-1-app-shell/stories/09-ci-workflow.md

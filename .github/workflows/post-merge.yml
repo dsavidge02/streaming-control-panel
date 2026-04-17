@@ -1,0 +1,66 @@
+name: Post-Merge
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: post-merge-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Detect post-merge command
+        id: detect
+        shell: bash
+        run: |
+          if [[ ! -f package.json ]]; then
+            echo "command=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          command="$(node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json', 'utf8')); if (pkg.scripts && pkg.scripts.release) process.stdout.write('pnpm release'); else if (pkg.scripts && pkg.scripts.package) process.stdout.write('pnpm package');")"
+          echo "command=$command" >> "$GITHUB_OUTPUT"
+
+      - name: Release scaffold disabled
+        if: vars.ENABLE_POST_MERGE_RELEASE != 'true'
+        run: echo "Post-merge release is disabled. Set ENABLE_POST_MERGE_RELEASE=true after a real release command exists."
+
+      - name: No release command found
+        if: vars.ENABLE_POST_MERGE_RELEASE == 'true' && steps.detect.outputs.command == ''
+        run: echo "ENABLE_POST_MERGE_RELEASE is true, but no package.json release or package script was found."
+
+      - name: Set up pnpm
+        if: vars.ENABLE_POST_MERGE_RELEASE == 'true' && steps.detect.outputs.command != ''
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10'
+
+      - name: Set up Node with pnpm cache
+        if: vars.ENABLE_POST_MERGE_RELEASE == 'true' && steps.detect.outputs.command != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        if: vars.ENABLE_POST_MERGE_RELEASE == 'true' && steps.detect.outputs.command != ''
+        run: pnpm install --frozen-lockfile
+
+      - name: Run post-merge command
+        if: vars.ENABLE_POST_MERGE_RELEASE == 'true' && steps.detect.outputs.command != ''
+        run: ${{ steps.detect.outputs.command }}
