@@ -8,9 +8,13 @@
 		"test": "vitest run --passWithNoTests"
 	},
 	"dependencies": {
-		"@panel/shared": "workspace:*"
+		"@panel/shared": "workspace:*",
+		"fastify": "^5.8.5",
+		"fastify-type-provider-zod": "^6.1.0",
+		"zod": "^4.3.6"
 	},
 	"devDependencies": {
+		"@types/node": "^24.12.2",
 		"typescript": "^5",
 		"vitest": "^4"
 	}
