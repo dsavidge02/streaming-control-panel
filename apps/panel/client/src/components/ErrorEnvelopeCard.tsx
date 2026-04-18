@@ -41,7 +41,7 @@ export function ErrorEnvelopeCard({
 			<p className="text-[13px] leading-relaxed text-[var(--panel-ink)]">
 				{message}
 			</p>
-			<pre className="mt-3 overflow-x-auto text-[10px] tracking-wide text-[var(--panel-ink-muted)]">
+			<pre className="mt-3 whitespace-pre-wrap break-all text-[10px] leading-relaxed tracking-wide text-[var(--panel-ink-muted)]">
 				{rawEnvelope}
 			</pre>
 			<button

@@ -9,7 +9,7 @@
 		"includes": [
 			"**",
 			"!node_modules",
-			"!dist",
+			"!**/dist",
 			"!coverage",
 			"!docs/references"
 		]

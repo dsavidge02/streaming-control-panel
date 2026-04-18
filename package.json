@@ -2,7 +2,12 @@
 	"private": true,
 	"packageManager": "pnpm@10.33.0",
 	"type": "module",
+	"main": "apps/panel/server/dist/main/index.js",
 	"scripts": {
+		"start": "pnpm rebuild:electron && electron-vite dev",
+		"dev": "pnpm rebuild:electron && electron-vite dev",
+		"rebuild:electron": "electron-rebuild -f -w better-sqlite3 --module-dir apps/panel/server",
+		"rebuild:node": "pnpm install --force --filter @panel/server better-sqlite3",
 		"format:check": "biome format .",
 		"format:fix": "biome format --write .",
 		"lint": "biome lint .",
@@ -14,14 +19,16 @@
 		"red-verify": "pnpm format:check && pnpm lint && pnpm typecheck",
 		"verify": "pnpm red-verify && pnpm test",
 		"green-verify": "pnpm verify && pnpm guard:no-test-changes",
-		"verify-all": "pnpm verify && pnpm test:e2e",
-		"postinstall": "electron-builder install-app-deps"
+		"verify-all": "pnpm verify && pnpm test:e2e"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2",
+		"@tailwindcss/vite": "^4.1",
+		"@vitejs/plugin-react": "^5",
 		"@electron/rebuild": "^4.0.3",
 		"electron": "^41.2.1",
 		"electron-builder": "^26.8.1",
+		"electron-vite": "^5",
 		"typescript": "^5"
 	},
 	"pnpm": {

@@ -23,5 +23,5 @@ If `pnpm start` fails with `NODE_MODULE_VERSION` mismatch after switching Electr
 | Command | Surface | Notes |
 | --- | --- | --- |
 | `pnpm --filter @panel/client dev` | Renderer-only browser view at `http://localhost:5173` | Story 5 landing renderer for UI iteration without Electron or Fastify |
-| `pnpm --filter @panel/server dev` | Server-only Fastify mode | Placeholder for Story 7; lands in Story 7 |
-| `pnpm start` | Full Electron app mode | Placeholder for Story 7; lands in Story 7 |
+| `pnpm --filter @panel/server dev` | Fastify standalone on `http://127.0.0.1:7077` | Server-side iteration without the Electron shell |
+| `pnpm start` | Full Electron app - Fastify (`:7077`) + Vite renderer (`:5173`) + main process with HMR | Renderer source edits hot-reload without Electron restart |
