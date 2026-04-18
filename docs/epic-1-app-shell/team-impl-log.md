@@ -2,7 +2,11 @@
 
 **Skill:** `ls-team-impl-v2` (experimental — paired with `ls-tech-design-v2`)
 
-**state:** `BETWEEN_STORIES` — Story 5 accepted and committed 2026-04-17 (human visual review passed after fix round 2). Cumulative test count: **68 Vitest live (4 shared + 37 server + 27 client) + 17 Playwright baselines**. Story 5 fix history: fix round 1 (Codex + Opus architectural dual review) caught 1 Critical + 3 Majors + 2 Minors — Critical downgraded to Major-accept-risk (test-plan feedback for pre-epic-verification cleanup; `authApi.ts` has no dedicated test by plan design), 3 Majors fixed (`usePalette` interface narrowed to `{ palette, setPalette }`, Google CDN removed from production `index.html`, 3 .woff2 fonts self-hosted in `public/fonts/`), 2 Minors accept-risk (test literal constants, README dev-mode port info deferred to Story 7). **Fix round 2 driven by HUMAN VISUAL REVIEW catching 2 defects structural review missed:** Defect A (palette switcher had no collapsed state — visually-identical default vs open baselines; ui-spec §6 listed `palette-switcher-open` as a state but §7 only described the expanded pane) → fixed via new collapsed trigger button + open/close state machine + `aria-expanded`/`aria-controls`/Escape dismissal/click-outside dismissal + ui-spec §6+§7+§8 UA5 clarification + 2 new PaletteSwitcher tests; Defect B (footer clipped from 16/17 baselines — Playwright defaulted to viewport-only capture) → fixed via `{ animations: 'disabled', fullPage: true }` on every `toHaveScreenshot` call. **Defect B surfaced as [`docs/v2-findings/010-playwright-fullpage-default.md`](../v2-findings/010-playwright-fullpage-default.md) — a v2 skill gap;** recommend both `ls-tech-design-v2` and `ls-team-impl-v2` codify `fullPage: true` as the default capture mode for UI-spec-scoped Playwright verification. All 17 baselines regenerated with corrected layouts (default viewport now 1280×903; responsive now 960×1231; footer visible throughout). `.red-ref` rotated to Story 5's SHA post-commit; `pnpm green-verify` confirmed green. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d`) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`) + Story 4 (`9457d11`).
+**state:** `BETWEEN_STORIES` — Story 6 accepted and committed 2026-04-17 in a fresh Claude Code session. Cumulative test count: **73 Vitest live (4 shared + 37 server + 32 client) + 17 Playwright baselines** (unchanged — redirect states already captured in Story 5 via testBypass). Story 6 delivered the client-side gate in 1 driver iteration: new files `src/app/{defineRoute.ts, routes.ts, router.tsx, RequireAuth.tsx}`, new placeholder views `src/views/{HomePlaceholder,SettingsPlaceholder}.tsx`, new 5-test file `src/app/router.test.tsx` (TC-2.1a/b/c + TC-2.5b + TC-2.6a); `src/App.tsx` MODIFY swapped `<Landing />` for `<RouterProvider router={router} />` preserving `<PaletteProvider>` wrapper. Dual review clean: 1 Minor (RequireAuth missing Epic 2 replacement comment from tech-design) accepted-risk and filed for pre-epic-verification cleanup. Incidental bonus: Codex's App.tsx rewrite removed an erroneous UTF-8 BOM that Story 5's implementer prepended (filed cleanup resolved naturally). Impl thread `019d9ea3-a22e-71e3-ba95-6ca535e15978`; review thread `019d9eac-5b3d-7010-9aa6-ad37f229be63`. Delivery markers: impl=2, review=3. Zero walls, zero relaunches. `.red-ref` rotated to Story 6's commit SHA post-commit; `pnpm green-verify` confirmed green. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d`) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`) + Story 4 (`9457d11`) + Story 5 (`4220836`).
+
+**Previously: STORY_ACTIVE** — Story 6 started 2026-04-17 in a fresh Claude Code session. Phase: `reviewing` (impl GREEN iter 1, driver exit 0; cumulative test count: 73 Vitest live = 4 shared + 37 server + 32 client; 17 Playwright unchanged; impl thread `019d9ea3-a22e-71e3-ba95-6ca535e15978`). Team `epic-1-app-shell` persisted from prior session (TeamCreate reported already-leading; memory note `reference_team_directory_ephemeral` may be stale or session-scoped vs persistent). Implementer spawned as teammate `impl-story-6`. Story 6 gate per Story 5 transition recommendation: `pnpm red-verify && pnpm verify` (not green-verify). Target delta: +5 Vitest tests (68→73 live), zero new Playwright baselines (redirect states already captured via testBypass in Story 5). Key MODIFY flag: `apps/panel/client/src/App.tsx` currently mounts `<Landing />` as a direct child of `<PaletteProvider>` — Story 6 replaces that child with `<RouterProvider router={router} />` per tech-design-client §App Root. Any new e2e screenshots (none expected) must use `{ animations: 'disabled', fullPage: true }` per Finding 010.
+
+**Previously: BETWEEN_STORIES** — Story 5 accepted and committed 2026-04-17 (human visual review passed after fix round 2). Cumulative test count: **68 Vitest live (4 shared + 37 server + 27 client) + 17 Playwright baselines**. Story 5 fix history: fix round 1 (Codex + Opus architectural dual review) caught 1 Critical + 3 Majors + 2 Minors — Critical downgraded to Major-accept-risk (test-plan feedback for pre-epic-verification cleanup; `authApi.ts` has no dedicated test by plan design), 3 Majors fixed (`usePalette` interface narrowed to `{ palette, setPalette }`, Google CDN removed from production `index.html`, 3 .woff2 fonts self-hosted in `public/fonts/`), 2 Minors accept-risk (test literal constants, README dev-mode port info deferred to Story 7). **Fix round 2 driven by HUMAN VISUAL REVIEW catching 2 defects structural review missed:** Defect A (palette switcher had no collapsed state — visually-identical default vs open baselines; ui-spec §6 listed `palette-switcher-open` as a state but §7 only described the expanded pane) → fixed via new collapsed trigger button + open/close state machine + `aria-expanded`/`aria-controls`/Escape dismissal/click-outside dismissal + ui-spec §6+§7+§8 UA5 clarification + 2 new PaletteSwitcher tests; Defect B (footer clipped from 16/17 baselines — Playwright defaulted to viewport-only capture) → fixed via `{ animations: 'disabled', fullPage: true }` on every `toHaveScreenshot` call. **Defect B surfaced as [`docs/v2-findings/010-playwright-fullpage-default.md`](../v2-findings/010-playwright-fullpage-default.md) — a v2 skill gap;** recommend both `ls-tech-design-v2` and `ls-team-impl-v2` codify `fullPage: true` as the default capture mode for UI-spec-scoped Playwright verification. All 17 baselines regenerated with corrected layouts (default viewport now 1280×903; responsive now 960×1231; footer visible throughout). `.red-ref` rotated to Story 5's SHA post-commit; `pnpm green-verify` confirmed green. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d`) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`) + Story 4 (`9457d11`).
 
 **Previously: BETWEEN_STORIES** — Story 4 accepted and committed 2026-04-17. Cumulative test count: 41 live + 0 skipped. Dual-review (Opus + Codex) caught 1 Critical + 3 Majors + 2 Minors; consolidated fix round drove all fixes + a mid-flight design correction (inMemoryDb-as-test-signal reshape → proper buildTestServer migration). `.red-ref` mechanism established: file is gitignored, written post-commit from bash (UTF-8 guaranteed), guard hardened with BOM/null-byte/SHA validation. `pnpm green-verify` green post-commit. Ready to reload skill and spawn Story 5 (first UI-scope story — landing view + palette system + 17 baseline Playwright screenshots). Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d`) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`). Cumulative test count entering Story 4: 26 live + 7 skipped (33 authored). Expected after Story 4: 41 live + 0 skipped (un-skip 7 Story 2 tests + add 8 new: 1 gateExempt + 4 originPreHandler + 3 sessionPreHandler). Story 4 is the first TDD cycle (establishes `.red-ref`); acceptance adds `pnpm green-verify` pass to the gate set. Fresh Claude Code session: team `epic-1-app-shell` recreated 2026-04-17 (ephemeral per `reference_team_directory_ephemeral.md`); ls-team-impl-v2 skill reloaded before Story 4 spawn; Finding 008 standalone-subagent trap explicitly guarded against. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred fixes) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`). Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Team `epic-1-app-shell` recreated again this fresh session (ephemeral per `reference_team_directory_ephemeral.md`); ls-team-impl-v2 skill reloaded; Finding 008 standalone-subagent trap explicitly guarded against. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred fixes) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Cumulative test count entering Story 3: 18 live + 7 skipped; Story 3 should add 8 live → target 26 live cumulative.
 
@@ -934,4 +938,99 @@ Delivery marker `DELIVERY_CHECK_MARKER_ECHO_7077` observed in every Codex JSONL 
 | Twitch Helix / EventSub | not started | Epic 3 / Epic 4a | — |
 | OS keychain (`keytar`) | not started | Epic 2 | — |
 | Electron shell | not started | Story 7 | — |
+| GitHub Actions CI | partial (docs-fallback) | Story 9 | — |
+
+### Story 6 — Pre-Acceptance Receipt (2026-04-17)
+
+**CLI evidence references** (2 Codex sessions — implementer + reviewer; zero fix rounds needed):
+
+- Impl iter 1 — thread `019d9ea3-a22e-71e3-ba95-6ca535e15978`; JSONL `codex-story-6-impl.iter-1.jsonl`. Wrapper verdict `REAL_ERROR` but driver's ground-truth gate check returned exit 0; driver correctly short-circuited to GREEN and composed the impl-report. Delivered 7 files: 5 new source (`defineRoute.ts`, `routes.ts`, `router.tsx`, `RequireAuth.tsx` in `src/app/`; `HomePlaceholder.tsx`, `SettingsPlaceholder.tsx` in `src/views/`), 1 new test (`router.test.tsx`, 5 tests), 1 MODIFY (`App.tsx`).
+- Reviewer Codex pass — thread `019d9eac-5b3d-7010-9aa6-ad37f229be63`; JSONL `codex-story-6-review.iter-1.jsonl`; findings `codex-story-6-findings.md`. Verdict 1 Minor (doc drift); 0 Major; 0 Critical. `--max-iterations 1` per review-mode handoff.
+
+Delivery marker `DELIVERY_CHECK_MARKER_ECHO_7077` observed in both JSONLs (impl=2, review=3; 5 total). Zero walls, zero relaunches.
+
+**Top findings and dispositions:**
+
+| # | Finding | Severity | Disposition | Reasoning |
+|---|---------|----------|-------------|-----------|
+| 1 | `RequireAuth.tsx`'s `isAuthenticated()` missing the Epic 2 replacement comment that `tech-design-client.md` §RequireAuth Guard includes verbatim | Minor | **accepted-risk, filed for pre-epic-verification cleanup** | Behavior correct; doc drift only. DoD doesn't mandate the comment. Pre-epic cleanup venue can add a 2-line comment across all Epic 1 isAuthenticated-style stubs in one sweep. |
+
+**Architectural observations (reviewer, logged but no change needed):**
+
+- `defineRoute.ts` uses `createElement(RequireAuth, undefined, args.element)` because the file is `.ts` not `.tsx`. Functionally identical to the design's `<RequireAuth>{args.element}</RequireAuth>`. No drift.
+- `RouteDefinition` interface is strict; no `usePalette`-style widening regression from Story 5.
+- TC-2.5b genuinely registers a NEW route (`/test-gated`) via `defineRoute({ gated: true })` and proves inheritance — not a re-test of `/home`.
+- Router tests use `createMemoryRouter` (not `<BrowserRouter>`), jsdom-safe, matching test-plan fixture guidance.
+- `<RedirectFlash />` NOT duplicated — only the Story 5-owned instance exists. Story 6 adds no shadow implementation.
+- `App.tsx` MODIFY is minimal: only the direct `<Landing />` child swap + import adjustments. `<PaletteProvider>` wrapper preserved.
+
+**Bonus cleanup (unplanned):** Codex's rewrite of `App.tsx` removed an erroneous UTF-8 BOM that Story 5's implementer had prepended (Story 5 Pre-Acceptance Receipt filed README.md BOM for pre-epic cleanup; App.tsx had the same defect, and Story 6's write-from-scratch naturally produced BOM-free output). Biome tolerated the BOM before, but removal is a net positive. **Note for future Story 7+ handoffs:** Codex on Windows may re-introduce BOMs when APPENDing vs writing-from-scratch. Watch for it.
+
+**Exact story gate commands run by orchestrator (ground truth, 2026-04-17T23:45 local):**
+
+- `pnpm red-verify` → exit 0 (biome format 91 files; biome lint 92 files; typecheck across 3 packages clean)
+- `pnpm verify` → exit 0 (73 live tests: 4 shared + 37 server + 32 client)
+- `grep -rn '"link:' apps/*/package.json package.json` → exit 2 / 0 matches (no dep-graph regression)
+- `git diff --stat` across all touched paths: `App.tsx` shows 6+ / 2− (a clean swap); 6 new source + 1 new test + log updates; no undeclared touches
+- Delivery marker grep on impl + review JSONLs: 2 + 3 occurrences respectively
+- Playwright baselines: `ls tests/e2e/__screenshots__/` → 17 files (unchanged from Story 5)
+- `pnpm green-verify` confirmed GREEN post-commit after `.red-ref` rotation to Story 6's commit SHA
+
+**UI spec compliance:**
+
+- No new Playwright screenshots produced or required this story — `redirect-flash-home` and `redirect-flash-settings` baselines were captured in Story 5 via testBypass forced-state. Story 6 makes those states reachable via natural router flow; the existing baselines remain visually valid.
+- One-way ownership contract intact: Story 6 does not redefine `<RedirectFlash />` or `<NavBar />`. It only produces the router context.
+- `<NavBar />` gated-tab click behavior (ui-spec §7: PLAY/OPTIONS triggers `<RedirectFlash>`) is now genuinely exercisable via `<RouterProvider>`. Story 5's click handlers intact.
+- Human visual review: **not required this story** — no new baselines. Story 5's visuals remain authoritative.
+
+**Open risks:** none blocking. Epic 2 comment defer documented above with pre-epic-verification cleanup as venue.
+
+### Story 6 Orchestration Observations (captured for v2-findings + future handoffs)
+
+1. **Fastest story-cycle yet.** Impl driver green in iter 1 with zero fixes, reviewer clean with 1 Minor, zero fix-round drivers. Signal: the tech-design-client companion is carrying its weight — Story 6's design section included complete code for every module, so the implementer's task section was a near-direct pointer and Codex produced design-matching output on the first try.
+
+2. **Wrapper `REAL_ERROR` verdict with ground-truth GREEN gate is an expected pattern.** First surfaced in Story 5 fix round 1; now consistently observed. Codex's internal error counter trips on benign conditions (e.g., shell command stderr noise during typechecks) that don't represent real failures. `drive-until-green.sh`'s design of checking ground-truth gates before escalating the wrapper verdict is validated by repetition. Consider upstreaming this as a Codex harness finding — the ground-truth-over-wrapper-verdict pattern is load-bearing.
+
+3. **Team persisted across Claude Code sessions.** `TeamCreate` reported "Already leading team" on this session's start, though memory note `reference_team_directory_ephemeral` claimed team dirs are ephemeral. Two Story 5 teammates (`story-5-implementer`, `story-5-reviewer`) were still in the `config.json` member list. User caught it; team-lead `SendMessage`d both with `shutdown_request` and they acked within seconds. **Pattern to codify:** on fresh-session resumption, always read `~/.claude/teams/<team>/config.json` and shut down any teammates from prior stories before spawning this story's teammates. The memory note may need refinement from "always recreate team" to "team dir persists; check member list and shut down stale members before spawning this story's teammates".
+
+4. **Incidental BOM cleanup on App.tsx was a bonus.** Codex rewrote App.tsx in full, producing BOM-free output. Biome had tolerated the BOM on App.tsx for Story 5's duration. This style of incidental cleanup when Codex touches a file should be watched for — in the opposite direction, Codex can also introduce BOMs when APPENDing on Windows. Future handoffs should explicitly state "no BOM; UTF-8 LF endings" when the file is expected to stay in a canonical encoding.
+
+5. **Single-commit-per-story header update pattern holds.** Story 6's log header adds Story 5's `4220836` SHA to the prior-accepted list (safe to reference now post-Story-5-commit) but does NOT include Story 6's own SHA anywhere — that reference will land in Story 7's commit. Avoids the chicken-and-egg of in-commit SHA self-reference without needing amendment dances.
+
+6. **Team-lead pre-acceptance gate re-run caught nothing new but validated the reviewer's authoritative re-run.** Skill discipline "run the gate yourself, don't trust reports" held. Cost is ~10 seconds for a non-UI-scope story; worth it always.
+
+### Story 6 — Transition Checkpoint (accepted + committed 2026-04-17)
+
+**Cumulative test count after Story 6: 73 Vitest live + 17 Playwright baselines.** Breakdown: 4 shared (Stories 0 + 4) + 37 server (Stories 1–4) + 32 client (Story 5's 27 + Story 6's 5 router tests). Story 7 target: Electron shell + full-app mode per test-plan Chunk 7; cumulative floor entering Story 7 is ≥ 73 Vitest live + 17 Playwright. Story 7 adds 1 new Vitest test (`server/src/electron/readme.test.ts` — TC-3.5a grep for dev-mode commands in README) → target 74 live.
+
+**Problems encountered:**
+1. Stale Story 5 teammates lingered in team config on fresh-session resumption. User flagged; team-lead dispatched shutdown requests; both acked within seconds. Captured as Orchestration Observation #3 and surfaces a possible memory-note update.
+2. Wrapper `REAL_ERROR` verdict on impl driver despite ground-truth GREEN. Design-intended: the driver checks ground-truth gates before escalating wrapper verdicts. No action needed; captured as Observation #2.
+3. Single Minor (RequireAuth Epic 2 comment). Accepted-risk and filed for pre-epic cleanup, matching the Story 5 Minor-doc-accept pattern.
+
+**Impact and resolution:** all three absorbed in-cycle. Problem 1 motivates a memory-note refinement (team directory persists; only active agents cycle). Problem 2 validates the harness design at repetition. Problem 3 continues the established accept-doc-drift-for-pre-epic-sweep pattern.
+
+**Recommendations for Story 7 (Electron main process + full-app mode):**
+
+- Story 7 introduces the Electron shell: `BrowserWindow`, `app://panel` protocol, `ipcMain` handlers, Fastify-inside-main. First cross-process story of the epic. Expect more integration than unit-level testing; gate will still be `pnpm red-verify && pnpm verify` plus TC-3.5a's `readme.test.ts` grep.
+- Human observed-run is required for TC-1.1b, TC-3.1a (app launch) and TC-3.2a (HMR). Schedule for after the story commit lands so the human sees the real app open.
+- Tech-design-server §Electron Shell + §Window Management + §Packaging are primary reads. Test-plan Chunk 7 is small (1 test) — most of the story is observed-run.
+- `@electron/rebuild` postinstall from Story 3 needs to still work with Story 7's electron-builder config. Verify no dep-graph churn.
+- `@panel/server`'s main points the Electron entry. Story 7 implementer should confirm existing `package.json` shape vs design.
+- README dev-mode table (deferred from Story 5 Minor #6) lands in Story 7 — implementer should add port info to ensure TC-3.5a's grep is satisfied.
+
+**Boundary inventory after Story 6:**
+
+| Boundary | Status | Owning Story | Change from Story 5? |
+|----------|--------|--------------|----------------------|
+| React Router | **wired** (createBrowserRouter mounted from App.tsx; defineRoute factory + RequireAuth guard produce client-side gate; 5 router tests green) | Story 6 | **advanced** (was dep-installed-no-wiring) |
+| Client renderer | fully implemented (Story 5 view; Story 6 router context) | Story 5 + 6 | router now authoritative |
+| Twitch OAuth (`/auth/login`) | stub body + real Origin gate | Story 2 → Story 4 → Epic 2 | — |
+| Twitch OAuth callback (`/oauth/callback`) | stub body + exempt gate | Story 2 → Epic 2 | — |
+| Live SSE producers | stub cadence + real session gate | Story 2 → Story 4 → Epic 4a | — |
+| SQLite filesystem | integrated | Story 3 | — |
+| Session cookies (`iron-session`) | wired (unseal active; issue path Epic 2) | Story 4 | — |
+| Twitch Helix / EventSub | not started | Epic 3 / Epic 4a | — |
+| OS keychain (`keytar`) | not started | Epic 2 | — |
+| Electron shell | not started | Story 7 | — (next) |
 | GitHub Actions CI | partial (docs-fallback) | Story 9 | — |
