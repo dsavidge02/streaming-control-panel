@@ -9,7 +9,7 @@
 		"lint:fix": "biome lint --write .",
 		"typecheck": "pnpm -r typecheck",
 		"test": "pnpm -r test",
-		"test:e2e": "node scripts/test-e2e-placeholder.mjs",
+		"test:e2e": "pnpm --filter @panel/client test:e2e",
 		"guard:no-test-changes": "node scripts/guard-no-test-changes.mjs",
 		"red-verify": "pnpm format:check && pnpm lint && pnpm typecheck",
 		"verify": "pnpm red-verify && pnpm test",

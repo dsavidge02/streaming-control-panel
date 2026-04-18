@@ -2,7 +2,9 @@
 
 **Skill:** `ls-team-impl-v2` (experimental — paired with `ls-tech-design-v2`)
 
-**state:** `BETWEEN_STORIES` — Story 4 accepted and committed 2026-04-17. Cumulative test count: 41 live + 0 skipped. Dual-review (Opus + Codex) caught 1 Critical + 3 Majors + 2 Minors; consolidated fix round drove all fixes + a mid-flight design correction (inMemoryDb-as-test-signal reshape → proper buildTestServer migration). `.red-ref` mechanism established: file is gitignored, written post-commit from bash (UTF-8 guaranteed), guard hardened with BOM/null-byte/SHA validation. `pnpm green-verify` green post-commit. Ready to reload skill and spawn Story 5 (first UI-scope story — landing view + palette system + 17 baseline Playwright screenshots). Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d`) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`). Cumulative test count entering Story 4: 26 live + 7 skipped (33 authored). Expected after Story 4: 41 live + 0 skipped (un-skip 7 Story 2 tests + add 8 new: 1 gateExempt + 4 originPreHandler + 3 sessionPreHandler). Story 4 is the first TDD cycle (establishes `.red-ref`); acceptance adds `pnpm green-verify` pass to the gate set. Fresh Claude Code session: team `epic-1-app-shell` recreated 2026-04-17 (ephemeral per `reference_team_directory_ephemeral.md`); ls-team-impl-v2 skill reloaded before Story 4 spawn; Finding 008 standalone-subagent trap explicitly guarded against. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred fixes) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`). Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Team `epic-1-app-shell` recreated again this fresh session (ephemeral per `reference_team_directory_ephemeral.md`); ls-team-impl-v2 skill reloaded; Finding 008 standalone-subagent trap explicitly guarded against. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred fixes) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Cumulative test count entering Story 3: 18 live + 7 skipped; Story 3 should add 8 live → target 26 live cumulative.
+**state:** `BETWEEN_STORIES` — Story 5 accepted and committed 2026-04-17 (human visual review passed after fix round 2). Cumulative test count: **68 Vitest live (4 shared + 37 server + 27 client) + 17 Playwright baselines**. Story 5 fix history: fix round 1 (Codex + Opus architectural dual review) caught 1 Critical + 3 Majors + 2 Minors — Critical downgraded to Major-accept-risk (test-plan feedback for pre-epic-verification cleanup; `authApi.ts` has no dedicated test by plan design), 3 Majors fixed (`usePalette` interface narrowed to `{ palette, setPalette }`, Google CDN removed from production `index.html`, 3 .woff2 fonts self-hosted in `public/fonts/`), 2 Minors accept-risk (test literal constants, README dev-mode port info deferred to Story 7). **Fix round 2 driven by HUMAN VISUAL REVIEW catching 2 defects structural review missed:** Defect A (palette switcher had no collapsed state — visually-identical default vs open baselines; ui-spec §6 listed `palette-switcher-open` as a state but §7 only described the expanded pane) → fixed via new collapsed trigger button + open/close state machine + `aria-expanded`/`aria-controls`/Escape dismissal/click-outside dismissal + ui-spec §6+§7+§8 UA5 clarification + 2 new PaletteSwitcher tests; Defect B (footer clipped from 16/17 baselines — Playwright defaulted to viewport-only capture) → fixed via `{ animations: 'disabled', fullPage: true }` on every `toHaveScreenshot` call. **Defect B surfaced as [`docs/v2-findings/010-playwright-fullpage-default.md`](../v2-findings/010-playwright-fullpage-default.md) — a v2 skill gap;** recommend both `ls-tech-design-v2` and `ls-team-impl-v2` codify `fullPage: true` as the default capture mode for UI-spec-scoped Playwright verification. All 17 baselines regenerated with corrected layouts (default viewport now 1280×903; responsive now 960×1231; footer visible throughout). `.red-ref` rotated to Story 5's SHA post-commit; `pnpm green-verify` confirmed green. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d`) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`) + Story 4 (`9457d11`).
+
+**Previously: BETWEEN_STORIES** — Story 4 accepted and committed 2026-04-17. Cumulative test count: 41 live + 0 skipped. Dual-review (Opus + Codex) caught 1 Critical + 3 Majors + 2 Minors; consolidated fix round drove all fixes + a mid-flight design correction (inMemoryDb-as-test-signal reshape → proper buildTestServer migration). `.red-ref` mechanism established: file is gitignored, written post-commit from bash (UTF-8 guaranteed), guard hardened with BOM/null-byte/SHA validation. `pnpm green-verify` green post-commit. Ready to reload skill and spawn Story 5 (first UI-scope story — landing view + palette system + 17 baseline Playwright screenshots). Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d`) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`). Cumulative test count entering Story 4: 26 live + 7 skipped (33 authored). Expected after Story 4: 41 live + 0 skipped (un-skip 7 Story 2 tests + add 8 new: 1 gateExempt + 4 originPreHandler + 3 sessionPreHandler). Story 4 is the first TDD cycle (establishes `.red-ref`); acceptance adds `pnpm green-verify` pass to the gate set. Fresh Claude Code session: team `epic-1-app-shell` recreated 2026-04-17 (ephemeral per `reference_team_directory_ephemeral.md`); ls-team-impl-v2 skill reloaded before Story 4 spawn; Finding 008 standalone-subagent trap explicitly guarded against. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred fixes) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`). Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Team `epic-1-app-shell` recreated again this fresh session (ephemeral per `reference_team_directory_ephemeral.md`); ls-team-impl-v2 skill reloaded; Finding 008 standalone-subagent trap explicitly guarded against. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred fixes) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Cumulative test count entering Story 3: 18 live + 7 skipped; Story 3 should add 8 live → target 26 live cumulative.
 
 **Story 0 retry started 2026-04-17** in a fresh Claude Code session under the updated Windows Codex Hardening. Prior rollback context preserved in §Process Notes. Story 0 deferred findings #1 (PATHS shape) and #2 (gateExempt filename) resolved in the restart session prep phase — see §Story 0 Pre-Acceptance Receipt dispositions.
 
@@ -816,6 +818,119 @@ Zero findings remain open. Reviewer Codex's `pnpm red-verify` + `pnpm verify` ru
 | Live SSE producers | **stub cadence + real session gate** (heartbeat every 15s; 401 on no session) | Story 2 → Story 4 → Epic 4a | advanced (real session gate active) |
 | SQLite filesystem | integrated | Story 3 | — |
 | Session cookies (`iron-session`) | **wired (unseal path active; issue path Epic 2)** | Story 4 | **advanced** (was not started) |
+| Twitch Helix / EventSub | not started | Epic 3 / Epic 4a | — |
+| OS keychain (`keytar`) | not started | Epic 2 | — |
+| Electron shell | not started | Story 7 | — |
+| GitHub Actions CI | partial (docs-fallback) | Story 9 | — |
+
+### Story 5 — Pre-Acceptance Receipt (2026-04-17)
+
+**CLI evidence references** (5 Codex sessions across implementer + reviewer + 2 fix rounds):
+
+- Impl iter 1 — thread `019d9e2e-d263-77e2-bc8b-905f6725ca35`; JSONL `codex-story-5-impl.iter-1.jsonl`. Driver GREEN on iter 1 of 4 (attempt 2 after single per-command flake; Rule 9 handled). Delivered 25 Vitest tests + 17 Playwright baselines (initial viewport-only) + empty `public/fonts/` beyond README (fix round 1 filled).
+- Reviewer spec-compliance Codex pass — thread `019d9e67-5bc1-7600-aac3-3210939b7dc7`; JSONL `codex-story-5-review.iter-1.jsonl`; findings `codex-story-5-findings.md`. Verdict 1 Critical + 3 Major + 2 Minor (dispositions below).
+- Fix round 1 Codex — thread `019d9e74-a408-7dc1-93ae-ff196199c08c`; JSONL `codex-story-5-fix.iter-1.jsonl`. Addressed Major #2 (usePalette narrowing), #3 (Google CDN removal), #4 (self-hosted .woff2 fetch: PressStart2P-Regular 12.5KB, SpaceMono-Regular 16.5KB, SpaceMono-Bold 16.7KB; all valid `wOF2` magic bytes). Iter 1/1, GREEN.
+- Fix round 2 Codex — threads `019d9e86-69c2-7db2-89f7-cfaa4366b17c` (iter 1) + `019d9e8d-7ed7-7c23-b017-c1a4d92e3ba4` (iter 2); JSONLs `codex-story-5-fix-round-2.iter-{1,2}.jsonl`. **Driven by human visual review** — Defect A (palette switcher had no collapsed state) and Defect B (footer clipped by Playwright viewport-only default capture). Iter 1 landed component rewrite + spec edits; iter 2 cleaned a `<section role="region">` → `<section aria-label=...>` typing correction plus a format nit. Iter 2/2 GREEN; all 17 baselines regenerated via `--update-snapshots`.
+
+Delivery marker `DELIVERY_CHECK_MARKER_ECHO_7077` observed in every Codex JSONL (2× each, 5 sessions = 10 total). Zero walled sessions across Story 5.
+
+**Top findings and dispositions:**
+
+| # | Finding | Severity | Disposition | Reasoning |
+|---|---------|----------|-------------|-----------|
+| 1 | TC-1.3b mocks `postAuthLogin`; no direct test asserts `postAuthLogin` uses POST + `PATHS.auth.login` | Critical → **Major + accept-risk** | **deferred to pre-epic-verification cleanup** | Test plan Chunk 5 explicitly assigns 0 tests to `authApi.ts`. Composed coverage is real (compile-time `PATHS` import + `fetchClient.test.ts` asserts URL). Recommended fix: add `authApi.test.ts` with method+URL assertion, OR restructure `SignInButton.test.tsx` to intercept at the fetch layer. |
+| 2 | `usePalette()` widened tech-design signature with `paletteId` field | Major | **fixed** | `PaletteContextValue` narrowed to `{ palette, setPalette }`; consumers derive `active = id === palette.id`. |
+| 3 | Google Fonts CDN unconditionally linked in production `index.html` — DoD line 171 violation | Major | **fixed** | CDN `<link>` removed; self-hosted `@font-face` in `fonts.css` covers both dev and production. |
+| 4 | Self-hosted `.woff2` files missing from `public/fonts/` — DoD line 171 violation | Major | **fixed** (team-lead redirected from reviewer's "defer to Story 8") | 3 WOFF2 assets committed; all valid `wOF2` magic bytes; SIL OFL 1.1 self-hosting license-permitted. |
+| 5 | Tests hardcode error-code literals instead of importing from `@panel/shared` | Minor | **accept-risk** | Test plan doesn't mandate shared-constant imports for tests. |
+| 6 | README dev-mode table rows for server/full-app lack port info | Minor | **accept-risk, defer to Story 7** | Story 7 owns TC-3.5a (`readme.test.ts` grep for all three commands with ports). |
+| A | **Palette switcher had no collapsed state** (default + `palette-switcher-open` baselines visually identical) | Major (human-caught) | **fixed in round 2** | New compact trigger button top-right + `useState<boolean>` for open/close + click-outside/Escape dismissal + `aria-expanded`/`aria-controls`/useId paneId; ui-spec §6 row added, §7 paragraph added, §8 UA5 appended; 2 new PaletteSwitcher tests (collapsed-by-default + Escape-closes). |
+| B | **Playwright baselines clipped below fold** — footer missing from 16/17 PNGs because default capture mode is viewport-only | Major (human-caught) | **fixed in round 2** | Every `toHaveScreenshot` call in `landing.spec.ts` now passes `{ animations: 'disabled', fullPage: true }`. Default-viewport PNGs 1280×800 → 1280×903; responsive 960×600 → 960×1231. **Surfaced as v2 skill gap: [`docs/v2-findings/010-playwright-fullpage-default.md`](../v2-findings/010-playwright-fullpage-default.md).** |
+
+**Architectural observations (to carry forward for tech-design-client next revision):**
+
+- **SignInProvider context pattern** — Landing wraps in `<SignInProvider>` to share sign-in state with HUD panels. Tech-design shows `useSignIn` as plain hook; tech-design-client should document this Story 5-introduced composition layer on next revision.
+- **`persistence.ts` synchronous API** diverges from tech-design's `async` signature. Intentional Epic 1 simplification.
+- **`RedirectFlash` three-source handling** — `prop` > `testBypass` > router `location.state`; `useInRouterContext()` guard. Forward-compat for Story 6.
+
+**Cross-cutting issues filed for later stories:**
+
+- **README.md UTF-8 BOM** — implementer prepended 0xEF 0xBB 0xBF when editing. Content preserved; Biome accepts. **Filed for pre-epic-verification cleanup**.
+- **`biome.json` `!dist` pattern** doesn't match workspace subdirectories (`apps/panel/client/dist/`, `apps/panel/client/test-results/`). `pnpm build` + Playwright runs pollute the gate. **Filed for Story 8**. Suggest `!**/dist/**` + `!**/test-results/**`.
+
+**Exact story gate commands run by orchestrator (ground truth, ran 2026-04-17T23:10 local after fix round 2 + transients cleaned):**
+
+- `pnpm red-verify` → exit 0 (biome format 84 files; biome lint 85 files; typecheck across 3 packages clean)
+- `pnpm verify` → exit 0 (68 live tests: 4 shared + 37 server + 27 client)
+- `grep -rn '"link:' apps/*/package.json package.json` → 0 matches (no dep-graph regression)
+- `git diff --stat` across all touched paths: APPEND-declared files (root `package.json`, `apps/panel/client/package.json`, `README.md`) verified as true appends — no overwrite regressions
+- `scripts/test-e2e-placeholder.mjs` deleted per DoD; `test:e2e` script flipped to `pnpm --filter @panel/client test:e2e` (`playwright test`)
+- 17 Playwright baselines committed under `apps/panel/client/tests/e2e/__screenshots__/`; dimensions validated (1280×903 default / 960×1231 responsive)
+- 3 self-hosted WOFF2 font files present at valid sizes with correct `wOF2` magic bytes
+- Delivery marker present in every Codex JSONL (5 sessions, 10 occurrences)
+- `pnpm green-verify` confirmed GREEN post-commit after `.red-ref` rotation to Story 5's commit SHA
+
+**UI spec compliance:**
+
+- Components in §7 present as modules: 12/12. ✓
+- Named states in §6 reachable: 9/9 + new `palette-switcher-collapsed`. ✓
+- 17 Playwright screenshots matching §Verification Surface matrix. ✓
+- One-way ownership contract holds (no interface redefinition; §8 UA5 is spec-authoring clarification). ✓
+- DCE of testBypass in production bundle: 0 occurrences in `dist/assets/index-*.js`. ✓
+- AC-1.4 empirically true (`withFetchRecorder` stub; `calls.length === 0` assertion). ✓
+- **Human visual review: PASSED after fix round 2.** Caught 2 defects structural review missed — validating the skill's declared verification ceiling.
+
+**Open risks:** none blocking; deferrals documented above with venues identified.
+
+### Story 5 Orchestration Observations (captured for v2-findings + future handoffs)
+
+1. **Human visual review earned its keep.** Both structural review layers graded Story 5 GREEN after fix round 1. The human eyeball caught two real defects — a missing collapsed state and a clipped footer — neither visible to structural checks. The skill's verification ceiling ("agents verify structural; visual quality is a human gate") is load-bearing, not aspirational. Future UI-scope stories must preserve this gate.
+
+2. **Defect B was a v2 skill gap.** Both v2 skills are silent on Playwright capture mode. Playwright's default is viewport-only, which silently truncates baselines when content exceeds viewport height. Structural review cannot catch this because the screenshot exists and the clipped component also exists in code. Finding 010 recommends codifying `fullPage: true` as the default in both skill bodies.
+
+3. **Defect A was a spec-authoring gap.** ui-spec §6 listed `palette-switcher-open` as a named state but §7 described only the expanded pane. Implementer built what the pane section described — always-visible. Neither round 1 reviewer nor Codex flagged the ambiguity. Captured as ui-spec §8 UA5. Spec-authoring lesson: if the state matrix implies transitions, the component spec must describe ALL named states, not just the canonical one.
+
+4. **Mid-flight fix-round redirect worked cleanly.** Reviewer proposed deferring Major #4 (missing .woff2 files) to Story 8. Team-lead redirected: DoD explicitly required self-hosted fonts; deferring would leave an unmet DoD line AND Stories 6+7 with a broken packaged build. Fix landed in same fix round 1 driver alongside #2+#3; no wasted iteration. Pattern: when reviewer proposes a deferral that leaves a DoD line unmet, team-lead redirects to fix-in-cycle.
+
+5. **Biome `!dist` pattern doesn't handle workspace subdirectories.** Both fix rounds required `git clean -fdx apps/panel/client/{dist,test-results}/` before running `pnpm verify`. Not a Story 5 defect but a lurking infrastructure issue Story 8 will bite. Fix: `!**/dist/**` + `!**/test-results/**`.
+
+6. **Reviewer empirical reproduction continues to add value.** Round 1 reviewer ran `pnpm --filter @panel/client build` to confirm DCE empirically, `pnpm install --force --no-frozen-lockfile` to confirm no ignored-build-script warnings, and `file` to verify WOFF2 magic bytes. None surfaced surprises, but the discipline is the point.
+
+7. **`react-router@^7` installed in Story 5's client package.json** but Story 6 scope. Reviewer spot-checked: no router code in Story 5. Dependency-only landing is cheap and Story 6 needs it; not scope creep.
+
+8. **Implementer silent-post-completion pattern broken this run.** Orchestrator-nudge at ~23 min during impl driver reinforced cadence. Round 1 fix + round 2 fix both reported promptly. Proactive nudge on long drivers (>20 min since last status) is now the pattern.
+
+### Story 5 — Transition Checkpoint (accepted + committed 2026-04-17)
+
+**Cumulative test count after Story 5: 68 Vitest live + 17 Playwright baselines.** Breakdown: 4 shared (Stories 0 + 4) + 37 server (Stories 1–4) + 27 client (Story 5's 25 + 2 added in fix round 2 for PaletteSwitcher collapsed/expanded). Story 6 target: router + placeholders per test-plan Chunk 6; cumulative floor entering Story 6 is ≥ 68 Vitest live.
+
+**Problems encountered:**
+1. Round 1 reviewer found 1 Critical (downgraded) + 3 Majors + 2 Minors. All dispositioned in-cycle; one fix-round driver iteration.
+2. **Human visual review caught 2 structural-review-invisible defects** (palette switcher collapsed state + Playwright footer clipping). Required unplanned fix round 2 with 2 driver iterations.
+3. Biome `!dist` not matching workspace subdirectories.
+4. Transient driver verdict noise (`REAL_ERROR` from Codex's in-session error count even when final gates green) — harness handled correctly.
+
+**Impact and resolution:** all four absorbed in-cycle. Problem 2 was a methodology win — structural checks didn't find the defects, the human gate did — and surfaced as Finding 010 (v2 skill gap). Problem 3 filed for Story 8. Final gates triple-confirmed.
+
+**Recommendations for Story 6 (client-side router + gating + placeholders):**
+
+- Story 6 registers `/`, `/home`, `/settings` routes via React Router 7 (dep already installed). `<RequireAuth>` guard reads `isAuthenticated()` which Story 6 owns.
+- `<RedirectFlash>` already handles `location.state.redirectedFrom` cleanly — Story 6 just wires the router.
+- TC-2.4a passes in Story 5's `Landing.test.tsx` as belt-and-suspenders; Story 6 re-exercises in router context.
+- Story 6 is a new Red commit — acceptance gate is `pnpm red-verify && pnpm verify`, not `green-verify`.
+- Any new e2e screenshots must use `{ animations: 'disabled', fullPage: true }` — explicit orchestrator rule until v2 skill update lands.
+
+**Boundary inventory after Story 5:**
+
+| Boundary | Status | Owning Story | Change from Story 4? |
+|----------|--------|--------------|----------------------|
+| Client renderer | **fully implemented** (landing view + 5 palettes + sign-in handler + API client + Playwright harness + 17 baselines) | Story 5 | **advanced** (was not started) |
+| React Router | dep installed; no wiring | Story 6 | dep landed |
+| Twitch OAuth (`/auth/login`) | stub body + real Origin gate | Story 2 → Story 4 → Epic 2 | — |
+| Twitch OAuth callback (`/oauth/callback`) | stub body + exempt gate | Story 2 → Epic 2 | — |
+| Live SSE producers | stub cadence + real session gate | Story 2 → Story 4 → Epic 4a | — |
+| SQLite filesystem | integrated | Story 3 | — |
+| Session cookies (`iron-session`) | wired (unseal active; issue path Epic 2) | Story 4 | — |
 | Twitch Helix / EventSub | not started | Epic 3 / Epic 4a | — |
 | OS keychain (`keytar`) | not started | Epic 2 | — |
 | Electron shell | not started | Story 7 | — |

@@ -5,13 +5,30 @@
 	"version": "0.0.0",
 	"scripts": {
 		"typecheck": "tsc --noEmit",
-		"test": "vitest run --passWithNoTests"
+		"test": "vitest run",
+		"dev": "vite",
+		"build": "vite build",
+		"test:e2e": "playwright test"
 	},
 	"dependencies": {
-		"@panel/shared": "workspace:*"
+		"@panel/shared": "workspace:*",
+		"react": "^19",
+		"react-dom": "^19",
+		"react-router": "^7"
 	},
 	"devDependencies": {
+		"@playwright/test": "latest",
+		"@tailwindcss/vite": "^4.1",
+		"@testing-library/jest-dom": "^6",
+		"@testing-library/react": "^16",
+		"@testing-library/user-event": "^14",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"@vitejs/plugin-react": "^5",
+		"jsdom": "^26",
+		"tailwindcss": "^4.1",
 		"typescript": "^5",
+		"vite": "^8",
 		"vitest": "^4"
 	}
 }

@@ -1,4 +1,15 @@
 {
 	"extends": "../../../tsconfig.base.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"jsx": "react-jsx",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"paths": {
+			"@/*": ["src/*"],
+			"@panel/shared": ["../shared/src/index.ts"],
+			"@panel/shared/*": ["../shared/src/*"]
+		},
+		"types": ["vite/client", "vitest/globals"]
+	},
 	"include": ["src/**/*"]
 }
