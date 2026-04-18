@@ -18,7 +18,7 @@ export default defineConfig({
 		viewport: { width: 1280, height: 800 },
 	},
 	webServer: {
-		command: "pnpm dev",
+		command: "pnpm --filter @panel/client dev",
 		reuseExistingServer: !process.env.CI,
 		url: "http://localhost:5173",
 		stdout: "ignore",
