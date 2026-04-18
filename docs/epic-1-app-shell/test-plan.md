@@ -552,6 +552,8 @@ Chunk 4 flips every previously-skipped test to live:
 
 **TCs:** TC-4.1a, TC-4.2a — observed-run. TC-4.3a — assertable via README grep.
 
+**Cross-cutting verification note:** Story 8 adds an automated boot-verify gate via `pnpm smoke:packaged` (Playwright-electron-style launch of `dist/packaged/win-unpacked/*.exe` with `SMOKE_MODE=1`, polling `http://127.0.0.1:7077/auth/login` for the expected `NOT_IMPLEMENTED` envelope). This gate runs alongside (not in place of) the observed-run checks TC-4.1a/TC-4.2a — the human observed-run confirms the landing view renders visually, while the smoke gate catches boot-time failures (missing asar content, native ABI mismatch, absent migration assets, packaged-only whenReady hangs) that are invisible to the dev-path `pnpm verify`. See `docs/epic-1-app-shell/stories/decisions-log.md` Decision #4 for the rationale.
+
 **Relevant Tech Design Sections:** server §Packaging.
 
 **Test files:**

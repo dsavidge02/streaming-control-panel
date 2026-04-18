@@ -25,3 +25,7 @@ If a command fails with a `NODE_MODULE_VERSION` mismatch, rebuild `better-sqlite
 | `pnpm --filter @panel/client dev` | Renderer-only browser view at `http://localhost:5173` | Story 5 landing renderer for UI iteration without Electron or Fastify |
 | `pnpm --filter @panel/server dev` | Fastify standalone on `http://127.0.0.1:7077` | Server-side iteration without the Electron shell |
 | `pnpm start` | Full Electron app - Fastify (`:7077`) + Vite renderer (`:5173`) + main process with HMR | Renderer source edits hot-reload without Electron restart |
+
+## Packaging
+
+`pnpm package` produces an Electron artifact for your host OS in `dist/packaged/`. Cross-OS installers and code signing are deferred until after M3.

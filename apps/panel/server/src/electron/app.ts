@@ -1,9 +1,9 @@
-import { app, net, protocol } from "electron";
+import { net, protocol } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { createMainWindow } from "./window.js";
 
-const RENDERER_ROOT = path.join(import.meta.dirname, "../../renderer");
+const RENDERER_ROOT = path.join(import.meta.dirname, "../renderer");
 
 protocol.registerSchemesAsPrivileged([
 	{
@@ -22,8 +22,6 @@ export async function startElectron(options: {
 }): Promise<void> {
 	void options.serverUrl;
 
-	await app.whenReady();
-
 	protocol.handle("app", (request) => {
 		const url = new URL(request.url);
 		const filePath = path.join(
@@ -34,5 +32,11 @@ export async function startElectron(options: {
 		return net.fetch(pathToFileURL(filePath).toString());
 	});
 
-	createMainWindow();
+	try {
+		createMainWindow();
+	} catch (err) {
+		// eslint-disable-next-line no-console
+		console.error("createMainWindow failed:", err);
+		throw err;
+	}
 }

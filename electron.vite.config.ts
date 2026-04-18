@@ -41,7 +41,7 @@ export default defineConfig({
 			},
 		},
 		build: {
-			outDir: "../server/dist/renderer",
+			outDir: path.resolve(__dirname, "apps/panel/server/dist/renderer"),
 			rollupOptions: {
 				input: path.resolve(__dirname, "apps/panel/client/index.html"),
 			},

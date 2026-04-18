@@ -6,6 +6,8 @@ An installed Electron desktop app that lets a solo Twitch streamer run their cha
 
 **Stack:** Electron 41, Node 24 LTS, Fastify 5, React 19 + Vite 8, Tailwind 4.1 + shadcn/ui, SQLite (better-sqlite3) + Drizzle 0.45, Zod 4, iron-session 8, Vitest 4, Biome 2, pnpm 10 workspace. No code is implemented yet — the repo is currently at Epic 1 Story 0 scaffolding.
 
+**pnpm linker:** Root `.npmrc` must set `node-linker=hoisted`. The default symlinked `.pnpm/` store breaks electron-builder's traversal and `@electron/rebuild`'s write-back path; hoisted produces an npm-flat `node_modules/` that packaging tooling understands natively. See `docs/epic-1-app-shell/stories/decisions-log.md` Decision #1.
+
 ## How to read the documentation
 
 This project is specified using the **Liminal Spec** methodology. Documents layer from general to specific; always read top-down when onboarding.

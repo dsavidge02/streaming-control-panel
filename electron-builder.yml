@@ -1,0 +1,42 @@
+appId: com.streamingpanel.app
+productName: Streaming Control Panel
+directories:
+  output: dist/packaged
+  buildResources: build-resources
+files:
+  - apps/panel/server/dist/main/**
+  - apps/panel/server/dist/preload/**
+  - apps/panel/server/dist/renderer/**
+  - apps/panel/server/drizzle/**
+  # Story 8 fix-4 retained path: explicit node_modules inclusion is still
+  # required because electron-builder's workspace traversal continues to
+  # miss part of the Fastify runtime graph under pnpm, even with hoisting.
+  - node_modules/**
+  - package.json
+asar: true
+asarUnpack:
+  - "**/*.node"
+  - "node_modules/better-sqlite3/**/*"
+  - "node_modules/.pnpm/**/node_modules/better-sqlite3/**/*"
+# Story 8 fix-4 retained the explicit swap-cycle even after enabling
+# `node-linker=hoisted`: the simplified `npmRebuild: true` path built
+# successfully, but the packaged app never reached server listen or
+# window creation in smoke verification. Packaging therefore still runs
+# the explicit rebuild/restore flow from `scripts/package-and-restore-native.mjs`,
+# and npmRebuild stays off to avoid relying on @electron/rebuild write-back.
+npmRebuild: false
+win:
+  # Required on Windows hosts without SeCreateSymbolicLink privilege.
+  # Without this, electron-builder-binaries extracting winCodeSign-*.7z
+  # fails on darwin .dylib symlinks. Not scope drift — documented
+  # empirical necessity on this host (team-impl-log Story 8 M1).
+  signAndEditExecutable: false
+  target:
+    - nsis
+mac:
+  target:
+    - dir
+    - dmg
+linux:
+  target:
+    - AppImage

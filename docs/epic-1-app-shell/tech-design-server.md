@@ -267,17 +267,22 @@ directories:
   output: dist/packaged
   buildResources: build-resources
 files:
-  - dist/main/**
-  - dist/preload/**
-  - dist/renderer/**
-  - node_modules/**
+  - apps/panel/server/dist/main/**
+  - apps/panel/server/dist/preload/**
+  - apps/panel/server/dist/renderer/**
   - package.json
 asar: true
 asarUnpack:
-  - "**/*.node"         # better-sqlite3 native binary
+  - "**/*.node"
   - "node_modules/better-sqlite3/**/*"
-npmRebuild: true        # forces @electron/rebuild before packaging
+  - "node_modules/.pnpm/**/node_modules/better-sqlite3/**/*"
+npmRebuild: false       # Story 8 fix round 2: rebuild:electron handles native rebuild before builder runs
 win:
+  # Required on Windows hosts without SeCreateSymbolicLink privilege.
+  # Without this, electron-builder-binaries extracting winCodeSign-*.7z
+  # fails on darwin .dylib symlinks. Not scope drift — documented
+  # empirical necessity on this host (team-impl-log Story 8 M1).
+  signAndEditExecutable: false
   target:
     - nsis
 mac:
@@ -300,12 +305,15 @@ pnpm install
            └── @electron/rebuild → rebuild better-sqlite3 for Electron 41's ABI
 
 pnpm package
+   └── pnpm rebuild:electron → electron-rebuild -f -w better-sqlite3 → Electron ABI binding in pnpm store
    └── electron-vite build
    └── electron-builder
-       └── npmRebuild: true → @electron/rebuild (belt-and-suspenders)
+       └── npmRebuild: false  (see note below)
        └── asar pack with asarUnpack exclusion for *.node
        └── per-OS installer output
 ```
+
+`@electron/rebuild` invoked via `electron-builder`'s `npmRebuild: true` does not reliably update pnpm-hoisted bindings: it logs `finished` but the `.node` file in the pnpm store retains the Node ABI, shipping a broken artifact. The explicit `rebuild:electron` script (Story 7) is the canonical path — it rewrites the pnpm-store binding in-place with Electron ABI — and is prepended to the `package` script. `npmRebuild: false` in `electron-builder.yml` disables the unreliable duplicate rebuild.
 
 If the dev installs the repo fresh and `pnpm start` fails with a `NODE_MODULE_VERSION` mismatch, the remediation is `pnpm rebuild` (which re-invokes the postinstall). This is covered in the README dev-mode section (AC-3.5).
 

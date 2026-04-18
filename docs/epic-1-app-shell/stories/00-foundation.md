@@ -92,3 +92,9 @@ See [`../tech-design.md`](../tech-design.md) §Workspace Layout and §Verificati
 - [ ] 3 tests pass in `shared/src/errors/codes.test.ts` (TC-8.3a + 2 supporting)
 - [ ] `pnpm red-verify` passes
 - [ ] `pnpm verify` passes
+
+---
+
+## Retrospective annotation (Story 8 decisions log #1)
+
+Story 0's `.npmrc` scaffolding omitted `node-linker=hoisted`, which is required for any workspace producing a packaged Electron artifact. Added in Story 8 fix-4; Story 0's DoD is retroactively incomplete on this dimension. See `docs/epic-1-app-shell/stories/decisions-log.md` Decision #1.

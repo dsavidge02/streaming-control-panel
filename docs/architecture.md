@@ -68,6 +68,10 @@ All versions verified against upstream docs on 2026-04-16.
 | Plain TS DOM (liminal-build style) | UI surface here is larger; React's component model pays off. |
 | Legacy Twitch IRC | Twitch is decommissioning IRC. EventSub `channel.chat.message` is the forward path. |
 
+### pnpm Configuration
+
+The root `.npmrc` **must** set `node-linker=hoisted`. The default symlinked `.pnpm/` store layout breaks electron-builder's workspace traversal and prevents `@electron/rebuild` from reliably writing back the rebuilt native binding. Under `node-linker=hoisted`, pnpm produces an npm-flat `node_modules/` that packaging tooling understands natively, and several packaging workarounds (explicit root-level runtime dependency duplication, custom `files:` patterns targeting `.pnpm/`) become unnecessary. Dev and test flows work under either linker mode; packaging is the first consumer that requires hoisted. See `docs/epic-1-app-shell/stories/decisions-log.md` Decision #1 for the research synthesis and upstream issue references.
+
 ---
 
 ## System Shape
