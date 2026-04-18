@@ -75,9 +75,9 @@ describe("registerRoute", () => {
 			const response = await app.inject({
 				method: "DELETE",
 				url: PATHS.auth.login,
+				headers: { Origin: "app://panel" },
 			});
 
-			// This locks in the registrar wiring without depending on Story 4's real Origin behavior.
 			expect(
 				vi.mocked(originPreHandlerModule.originPreHandler),
 			).toHaveBeenCalled();

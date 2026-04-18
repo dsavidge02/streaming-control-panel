@@ -134,3 +134,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# TDD guard marker (per-cycle; written by orchestrator post-commit)
+.red-ref

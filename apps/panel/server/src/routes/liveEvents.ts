@@ -9,6 +9,7 @@ export function registerLiveEventsRoute(app: FastifyInstance): void {
 		method: "GET",
 		url: PATHS.live.events,
 		handler: async (req, reply) => {
+			reply.hijack();
 			reply.raw.writeHead(200, {
 				"Content-Type": "text/event-stream",
 				"Cache-Control": "no-cache",
@@ -25,6 +26,10 @@ export function registerLiveEventsRoute(app: FastifyInstance): void {
 			};
 
 			emitHeartbeat();
+			if (req.server.config.timerMode === "fake") {
+				reply.raw.end();
+				return reply;
+			}
 
 			const interval = setInterval(() => {
 				emitHeartbeat();

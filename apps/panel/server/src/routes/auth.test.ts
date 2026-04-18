@@ -1,11 +1,10 @@
 import { errorEnvelopeSchema, PATHS } from "@panel/shared";
 import { describe, expect, it } from "vitest";
-import { buildServer } from "../server/buildServer.js";
+import { buildTestServer } from "../test/buildTestServer.js";
 
 describe("registerAuthRoutes", () => {
-	// Story 4: un-skip once real Origin preHandler lands.
-	it.skip("TC-6.2a POST /auth/login returns 501 NOT_IMPLEMENTED with matching Origin", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+	it("TC-6.2a POST /auth/login returns 501 NOT_IMPLEMENTED with matching Origin", async () => {
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
@@ -26,9 +25,8 @@ describe("registerAuthRoutes", () => {
 		}
 	});
 
-	// Story 4: un-skip once real Origin preHandler lands.
-	it.skip("TC-6.2b POST /auth/login returns 403 ORIGIN_REJECTED with mismatched Origin", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+	it("TC-6.2b POST /auth/login returns 403 ORIGIN_REJECTED with mismatched Origin", async () => {
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
@@ -47,9 +45,8 @@ describe("registerAuthRoutes", () => {
 		}
 	});
 
-	// Story 4: un-skip once real Origin preHandler lands.
-	it.skip("TC-2.3c POST /auth/login reaches handler unauthenticated (exempt)", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+	it("TC-2.3c POST /auth/login reaches handler unauthenticated (exempt)", async () => {
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
@@ -68,9 +65,8 @@ describe("registerAuthRoutes", () => {
 		}
 	});
 
-	// Story 4: un-skip once real Origin preHandler lands.
-	it.skip("TC-8.1c POST /auth/login returns the NOT_IMPLEMENTED error envelope", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+	it("TC-8.1c POST /auth/login returns the NOT_IMPLEMENTED error envelope", async () => {
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {

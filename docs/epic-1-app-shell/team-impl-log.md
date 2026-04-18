@@ -2,7 +2,7 @@
 
 **Skill:** `ls-team-impl-v2` (experimental — paired with `ls-tech-design-v2`)
 
-**state:** `BETWEEN_STORIES` — Story 3 accepted and committed 2026-04-17. Cumulative test count: 26 live + 7 skipped (33 authored). Reviewer verdict PASS with one Critical finding (pnpm.onlyBuiltDependencies missing) empirically reproduced and fixed in-cycle. Ready to reload skill and spawn Story 4 (server-side gate + Origin + session + cookie defaults — the story that un-skips Story 2's 7 skipped tests). Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Team `epic-1-app-shell` recreated again this fresh session (ephemeral per `reference_team_directory_ephemeral.md`); ls-team-impl-v2 skill reloaded; Finding 008 standalone-subagent trap explicitly guarded against. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred fixes) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Cumulative test count entering Story 3: 18 live + 7 skipped; Story 3 should add 8 live → target 26 live cumulative.
+**state:** `BETWEEN_STORIES` — Story 4 accepted and committed 2026-04-17. Cumulative test count: 41 live + 0 skipped. Dual-review (Opus + Codex) caught 1 Critical + 3 Majors + 2 Minors; consolidated fix round drove all fixes + a mid-flight design correction (inMemoryDb-as-test-signal reshape → proper buildTestServer migration). `.red-ref` mechanism established: file is gitignored, written post-commit from bash (UTF-8 guaranteed), guard hardened with BOM/null-byte/SHA validation. `pnpm green-verify` green post-commit. Ready to reload skill and spawn Story 5 (first UI-scope story — landing view + palette system + 17 baseline Playwright screenshots). Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d`) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`). Cumulative test count entering Story 4: 26 live + 7 skipped (33 authored). Expected after Story 4: 41 live + 0 skipped (un-skip 7 Story 2 tests + add 8 new: 1 gateExempt + 4 originPreHandler + 3 sessionPreHandler). Story 4 is the first TDD cycle (establishes `.red-ref`); acceptance adds `pnpm green-verify` pass to the gate set. Fresh Claude Code session: team `epic-1-app-shell` recreated 2026-04-17 (ephemeral per `reference_team_directory_ephemeral.md`); ls-team-impl-v2 skill reloaded before Story 4 spawn; Finding 008 standalone-subagent trap explicitly guarded against. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred fixes) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`) + Story 3 (`b4d578f`). Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Team `epic-1-app-shell` recreated again this fresh session (ephemeral per `reference_team_directory_ephemeral.md`); ls-team-impl-v2 skill reloaded; Finding 008 standalone-subagent trap explicitly guarded against. Prior accepted-and-committed: Story 0 (`15b3c00` + `7c0446d` deferred fixes) + Story 1 (`e65d7f5`) + Story 2 (`0e51796`). Cumulative test count entering Story 3: 18 live + 7 skipped; Story 3 should add 8 live → target 26 live cumulative.
 
 **Story 0 retry started 2026-04-17** in a fresh Claude Code session under the updated Windows Codex Hardening. Prior rollback context preserved in §Process Notes. Story 0 deferred findings #1 (PATHS shape) and #2 (gateExempt filename) resolved in the restart session prep phase — see §Story 0 Pre-Acceptance Receipt dispositions.
 
@@ -741,3 +741,82 @@ Zero Major, zero Minor, zero accepted-risk, zero defer.
 | Electron shell | not started | Story 7 | — |
 | GitHub Actions CI | partial (docs-fallback) | Story 9 | — |
 | Session cookies (`iron-session`) | not started | Story 4 | — |
+
+### Story 4 — Pre-Acceptance Receipt (2026-04-17)
+
+**CLI evidence references** (4 Codex sessions: 1 impl + 1 review + 2 fix-round iters; 1 aborted fix driver via user-directed reshape):
+
+- Impl iter 1 — thread `019d9dd8-4815-75d0-a773-fb54beec6201`; JSONL `codex-story-4-impl.iter-1.jsonl`. Driver exit 0 GREEN on iter 1 (attempt 2 of 3 after one per-command flake — Rule 9 handled). 10 deliverables landed: originPreHandler + sessionPreHandler real bodies, iron-session + @fastify/cookie installed, config.ts allowedOrigins + cookieSecret additions, sealFixtureSession.ts (replaced .d.ts bridge), 3 new test files (gateExempt + originPreHandler + sessionPreHandler), 7 Story 2 skips un-skipped. Implementer's caveat surfaced the `.red-ref` UTF-16 encoding issue pre-accept — elevated to full Critical by reviewer.
+- Review — thread `019d9df3-6888-7bb3-8c3b-d16341000141`; JSONL `codex-story-4-review.iter-1.jsonl`; findings at `codex-story-4-findings.md`. Empirically reproduced `pnpm green-verify` exit 1 (CRITICAL). Surfaced 3 additional Majors the implementer didn't flag: (a) `process.env.VITEST` sniff in production SSE handler (wrong seam — tech-design specifies `timerMode` via `BuildServerOptions`); (b) coupled cookie-secret defaults with VITEST-detection override in `buildServer.ts` (production bootstrap sniffing test runner env); (c) TC-7.4a used exempt route so preHandler-order reversal would still pass (no discrimination power). 2 Minors: 8 stale "un-skip once Story 4 lands" comments. Delivery marker observed 2× across impl + review JSONLs.
+- Fix round iter 1 — thread `019d9e09-6c2b-7e42-85c1-5f3fcaee67da`; JSONL `codex-story-4-fix.iter-1.jsonl`. Wrapper REAL_ERROR; driver correctly routed to iter-2 with composed fix prompt per rule 6. **(One prior fix driver was killed by orchestrator mid-flight — see §Story 4 Process Notes #1 below.)**
+- Fix round iter 2 — thread `019d9e0e-f379-7f81-ab49-e47181061f42`; JSONL `codex-story-4-fix.iter-2.jsonl`. Wrapper OK; ground-truth gate GREEN. All 6 fix items applied in one session with zero walls and zero relaunches.
+
+**Top findings and dispositions** (consolidated from reviewer's list; all dispositioned):
+
+| # | Finding | Severity | Disposition | Reasoning |
+|---|---------|----------|-------------|-----------|
+| 1 | `.red-ref` UTF-16-LE + BOM + CRLF from PowerShell `>` → `guard-no-test-changes.mjs` `ERR_INVALID_ARG_VALUE` → `pnpm green-verify` exit 1 | **Critical** | **fixed** | `.red-ref` gitignored + deleted from working tree; guard hardened with BOM strip + null-byte strip + 40-char hex SHA validation (exits 2 with debug hex dump on invalid); orchestrator writes `.red-ref` post-commit from bash via `printf '%s\n' "$(git rev-parse HEAD)" > .red-ref` (UTF-8 guaranteed). |
+| 2 | `process.env.VITEST` sniff in `liveEvents.ts` production handler | Major | **fixed** | `BuildServerOptions.timerMode?: 'fake' \| 'real'` default `'real'` extended; `buildTestServer` defaults `timerMode: 'fake'`; `req.server.config.timerMode` replaces all `process.env.VITEST` checks; zero hits repo-wide verified. |
+| 3 | Coupled cookie-secret defaults + `inMemoryDb+VITEST` override in `buildServer.ts` | Major | **fixed** | `FIXTURE_COOKIE_SECRET` exported from `sealFixtureSession.ts`; `buildTestServer` explicitly passes `config: { cookieSecret: FIXTURE_COOKIE_SECRET }`; VITEST override block deleted from `buildServer.ts`; production bootstrap no longer sniffs test context. Route tests migrated from `buildServer({ inMemoryDb: true })` → `buildTestServer()` (14 call sites across `auth.test.ts`, `liveEvents.test.ts`, `oauthCallback.test.ts`) to achieve clean separation — `inMemoryDb` retains its original Story 3 meaning as a SQLite path selector only. |
+| 4 | TC-7.4a uses exempt `/auth/login` → can't discriminate preHandler order | Major | **fixed** | Rewritten in place: registers inline `POST /test-gated-post` (new non-exempt gated route), asserts 403 `ORIGIN_REJECTED` with no cookie + bad Origin. Reversed order would throw 401 first → assertion fails → genuine discrimination power. |
+| 5 | 8 stale "un-skip once Story 4 lands" comments | Minor | **fixed** | Removed from `auth.test.ts` (4), `liveEvents.test.ts` (2), `oauthCallback.test.ts` (1), `registerRoute.test.ts` (1). |
+| 6 | `RESTART-INSTRUCTIONS.md` deletion (out of scope per story DoD) | Minor | **accepted-risk** | Log's Run Metadata already marked the file stale-slated-for-cleanup; Codex's deletion aligns with that cleanup intent. No re-add. |
+
+Zero findings remain open. Reviewer Codex's `pnpm red-verify` + `pnpm verify` runs matched the orchestrator's independent post-fix gates (triple confirmation); `pnpm green-verify` exit 0 confirmed post-commit.
+
+**Exact story gate commands run by orchestrator (ground truth, ran 2026-04-17T21:07 local):**
+- `pnpm red-verify` → exit 0 (48 files clean via biome; 3 packages typecheck clean)
+- `pnpm verify` → exit 0 (41 live tests: 4 shared [3 codes + 1 gateExempt] + 37 server [2 buildServer + 3 registerRoute + 3 errorHandler + 4 auth + 3 oauthCallback + 6 liveEvents + 4 originPreHandler + 3 sessionPreHandler + 8 data (data/db.test.ts)])
+- `pnpm green-verify` → exit 0 POST-COMMIT (guard skipped when `.red-ref` absent, then ran clean when `.red-ref == HEAD`)
+- `grep -rn 'process.env.VITEST' apps/panel/server/src/` → 0 hits
+- `grep 'buildServer(' apps/panel/server/src/routes/*.test.ts` → 0 hits (all 14 migrated to `buildTestServer()`)
+- `grep -rn '"link:' apps/*/package.json package.json` → 0 matches (no dep-graph regression)
+- `git diff --stat` across all touched paths: 17 files changed, +171/-135 — no replace-instead-of-append regressions. Biome auto-migrated CRLF warnings on next Git touch (advisory only).
+
+**UI spec compliance:** N/A for Story 4 (activates at Story 5).
+
+**Open risks:** none blocking.
+
+### Story 4 Orchestration Observations (captured for v2-findings + future handoffs)
+
+1. **Implementer-surfaced findings can still miss Critical.** Story 4's implementer surfaced the `.red-ref` UTF-16 encoding issue in their driver-exit report — but framed it as a fix-at-commit-time caveat rather than a DoD-blocker. Only the reviewer's empirical `pnpm green-verify` reproduction elevated it to Critical. Lesson: when implementer flags a "known issue" that touches an acceptance gate, reviewer must run that gate themselves. This is the second time a Critical was only caught by reviewer empirical reproduction (Story 3's pnpm.onlyBuiltDependencies being the first).
+
+2. **Mid-flight fix-impl design correction.** First fix-round task section proposed `buildServer` using `options.inMemoryDb === true` as a test-context trigger for `timerMode: 'fake'` + `FIXTURE_COOKIE_SECRET` defaults — functionally correct but semantically equivalent to the original MAJOR-2 violation (substituting one caller-provided signal for `process.env.VITEST`). Orchestrator killed the running driver, redirected to the correct shape (14 route-test call sites migrated from `buildServer({ inMemoryDb: true })` → `buildTestServer()`; `buildServer` kept test-ignorant; `buildTestServer` becomes the single touch-point for test fixtures). One sunk Codex iter cost vs. shipping a round-2 review catch — correct tradeoff. Pattern for future handoffs: "do not touch test files" is often too strict; the right rule is "test-infrastructure migration is in scope; test-logic changes are not." My initial fix brief had this wrong and the course-correction was necessary.
+
+3. **Reviewer's discrimination argument on TC-7.4a was exemplary.** The test was structurally correct (asserted 403 on bad Origin) but had no discrimination power because `/auth/login` is session-exempt so preHandler order was unobservable. Catching this requires thinking about what a reversed-order bug WOULD look like and whether the test would distinguish it. Store for v2-findings: "does this test discriminate the bug it claims to catch?" should be a standard reviewer question when the AC specifies an ordering or sequencing invariant.
+
+4. **Clean fix-round with zero walls, two iterations, bounded outer loop.** Fix round iter 1 caught a real error; fix iter 2 landed clean. Driver composition held. Total fix-round wall-clock ~22 minutes (including mid-flight reshape). No session walls this run — the 3-attempt relaunch cap from Finding 009 was not needed.
+
+5. **Log receipts + transition checkpoints are a core deliverable.** This log is now at ~780 lines with rich per-story narrative. The overhead is real but the return is substantial: future reloads (mid-epic, cross-session) have complete context, and downstream skill refinement has grounded evidence to work from. Worth the investment.
+
+### Story 4 — Transition Checkpoint (accepted + committed 2026-04-17)
+
+**Cumulative test count after Story 4: 41 live + 0 skipped.** Breakdown: 4 shared (Story 0's 3 codes + Story 4's 1 gateExempt) + 37 server (Story 1's 8 + Story 2's 7 now-live + Story 3's 8 + Story 4's 14 [4 auth un-skipped + 3 oauthCallback un-skipped originally counted in 7, plus 4 originPreHandler + 3 sessionPreHandler new]). Story 5 should add renderer tests + 17 baseline Playwright screenshots per UI spec Chunk 5; cumulative floor entering Story 5 is ≥ 41 live.
+
+**Problems encountered:**
+1. `.red-ref` UTF-16 encoding from PowerShell `>` redirect — would have silently broken Story 5's first commit.
+2. Reviewer surfaced 3 additional Majors the implementer didn't flag (VITEST sniff, coupled cookie secrets, TC-7.4a non-discrimination).
+3. Initial fix-round design drift (inMemoryDb-as-test-signal) — caught + reshaped mid-flight by orchestrator.
+4. Implementer silent cadence persists — consistent with Stories 1/2/3 pattern.
+
+**Impact and resolution:** all four absorbed in-cycle. Problem 1 → gitignored + guard hardened + bash-written post-commit. Problems 2–3 → consolidated fix round via drive-until-green.sh (2 iters). Problem 4 → orchestrator-side Monitor + nudges kept signal live. Final gates triple-confirmed (driver + orchestrator + green-verify post-commit). Boundary inventory: iron-session + @fastify/cookie deps landed; session-cookies boundary advances from "not started" to "wired (401 branch exercised; cookie issuance deferred to Epic 2)"; SSE producers from "stub cadence" to "real session-gated stub cadence" (Story 4 un-skipped its tests but producers remain stubs until Epic 4a).
+
+**Recommendations for Story 5 (first UI-scope story, blocked-by: Story 0 + UI spec):**
+- Story 5 is the first story where **human visual review is a hard gate**. Playwright screenshots must be produced per `docs/epic-1-app-shell/ui-spec.md`'s verification surface; surface them to the user before accept, not after.
+- `.red-ref` is now authoritative. Any Story 5 test-file change (adding renderer tests is expected) will fail `pnpm green-verify` until orchestrator updates `.red-ref` to Story 5's own commit SHA post-commit. This is by design — Story 5 is a new Red commit.
+- Cache prefix: Stories 0–4 used a consistent reading order. Story 5 introduces the UI spec as a first-class artifact; keep it after tech-design-client.md in the reading order to preserve cache benefits.
+- `buildTestServer` is now the single test factory. Renderer-adjacent integration tests (if any in Story 5) should use it or compose their own MSW-backed test shell; do not reintroduce `buildServer({ inMemoryDb: true })` in test code.
+
+**Boundary inventory after Story 4:**
+
+| Boundary | Status | Owning Story | Change from Story 3? |
+|----------|--------|--------------|----------------------|
+| Twitch OAuth (`/auth/login`) | **stub body + real Origin gate** (501 NOT_IMPLEMENTED) | Story 2 → Story 4 → Epic 2 | advanced (real Origin validation active) |
+| Twitch OAuth callback (`/oauth/callback`) | **stub body + exempt gate** (501 NOT_IMPLEMENTED) | Story 2 → Epic 2 | — |
+| Live SSE producers | **stub cadence + real session gate** (heartbeat every 15s; 401 on no session) | Story 2 → Story 4 → Epic 4a | advanced (real session gate active) |
+| SQLite filesystem | integrated | Story 3 | — |
+| Session cookies (`iron-session`) | **wired (unseal path active; issue path Epic 2)** | Story 4 | **advanced** (was not started) |
+| Twitch Helix / EventSub | not started | Epic 3 / Epic 4a | — |
+| OS keychain (`keytar`) | not started | Epic 2 | — |
+| Electron shell | not started | Story 7 | — |
+| GitHub Actions CI | partial (docs-fallback) | Story 9 | — |

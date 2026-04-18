@@ -12,7 +12,22 @@ if (!existsSync(redRefPath)) {
 	process.exit(0);
 }
 
-const redRef = readFileSync(redRefPath, "utf8").trim();
+let raw = readFileSync(redRefPath, "utf8");
+raw = raw.replace(/^\uFEFF/, "");
+raw = raw.replace(/\0/g, "");
+raw = raw.trim();
+
+if (!/^[0-9a-f]{40}$/i.test(raw)) {
+	const preview = Buffer.from(readFileSync(redRefPath))
+		.subarray(0, 80)
+		.toString("hex");
+	console.error(
+		`[guard:no-test-changes] ERROR: .red-ref contains invalid content; expected 40-char hex SHA, got first 80 bytes: ${preview}`,
+	);
+	process.exit(2);
+}
+
+const redRef = raw;
 const output = execFileSync(
 	"git",
 	["diff", "--name-only", `${redRef}..HEAD`, "--", "*.test.ts", "*.test.tsx"],

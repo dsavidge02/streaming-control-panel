@@ -11,6 +11,7 @@ export interface ServerConfig {
 	databasePath: string;
 	allowedOrigins: readonly string[];
 	cookieSecret: string;
+	timerMode: "real" | "fake";
 }
 
 function resolveUserDataDbPath(): string {
@@ -31,19 +32,31 @@ function resolveUserDataDbPath(): string {
 	return path.join(os.tmpdir(), "panel-dev.sqlite");
 }
 
+function resolveAllowedOrigins(): readonly string[] {
+	return [
+		"http://localhost:5173",
+		"http://127.0.0.1:5173",
+		"app://panel",
+	] as const;
+}
+
+function resolveCookieSecret(): string {
+	const fromEnv = process.env.PANEL_COOKIE_SECRET;
+	if (fromEnv && fromEnv.length >= 32) {
+		return fromEnv;
+	}
+
+	return "dev-only-change-in-epic-2-___________";
+}
+
 export function loadConfig(): ServerConfig {
 	return {
 		port: PANEL_PORT,
 		host: PANEL_HOST,
 		databasePath: resolveUserDataDbPath(),
-		allowedOrigins: [
-			"http://localhost:5173",
-			"http://127.0.0.1:5173",
-			"app://panel",
-		],
-		cookieSecret:
-			process.env.PANEL_COOKIE_SECRET ??
-			"dev-only-change-in-epic-2-___________",
+		allowedOrigins: resolveAllowedOrigins(),
+		cookieSecret: resolveCookieSecret(),
+		timerMode: "real",
 	};
 }
 

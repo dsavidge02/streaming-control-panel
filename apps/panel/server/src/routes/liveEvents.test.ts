@@ -1,10 +1,10 @@
 import { heartbeatEventSchema, PATHS } from "@panel/shared";
 import { describe, expect, it, vi } from "vitest";
-import { buildServer } from "../server/buildServer.js";
+import { buildTestServer } from "../test/buildTestServer.js";
 
 describe("registerLiveEventsRoute", () => {
 	it("TC-6.3b unauthenticated subscribe returns 401", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
@@ -24,8 +24,7 @@ describe("registerLiveEventsRoute", () => {
 		}
 	});
 
-	// Story 4: un-skip once sealFixtureSession helper lands.
-	it.skip("TC-6.3a heartbeat cadence: at least one heartbeat within 30s simulated time", async () => {
+	it("TC-6.3a heartbeat cadence: at least one heartbeat within 30s simulated time", async () => {
 		vi.useFakeTimers();
 
 		try {
@@ -33,7 +32,7 @@ describe("registerLiveEventsRoute", () => {
 				"../test/sealFixtureSession.js"
 			);
 			const sealedSession = await sealFixtureSession();
-			const { app } = await buildServer({ inMemoryDb: true });
+			const { app } = await buildTestServer();
 			await app.ready();
 
 			try {
@@ -57,13 +56,12 @@ describe("registerLiveEventsRoute", () => {
 		}
 	});
 
-	// Story 4: un-skip once sealFixtureSession helper lands.
-	it.skip("TC-6.4a heartbeat event payload parses against the shared SSE schema", async () => {
+	it("TC-6.4a heartbeat event payload parses against the shared SSE schema", async () => {
 		const { sealFixtureSession } = await import(
 			"../test/sealFixtureSession.js"
 		);
 		const sealedSession = await sealFixtureSession();
-		const { app } = await buildServer({ inMemoryDb: true });
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
@@ -94,7 +92,7 @@ describe("registerLiveEventsRoute", () => {
 	});
 
 	it("TC-2.2a unauthenticated /live/events returns 401 AUTH_REQUIRED envelope", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
@@ -115,7 +113,7 @@ describe("registerLiveEventsRoute", () => {
 	});
 
 	it("TC-3.4b server-only mode: /live/events gated unauth -> 401", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
@@ -136,7 +134,7 @@ describe("registerLiveEventsRoute", () => {
 	});
 
 	it("TC-8.1a 401 envelope shape", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {

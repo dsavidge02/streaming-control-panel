@@ -1,10 +1,10 @@
 import { errorEnvelopeSchema } from "@panel/shared";
 import { describe, expect, it } from "vitest";
-import { buildServer } from "../server/buildServer.js";
+import { buildTestServer } from "../test/buildTestServer.js";
 
 describe("registerOauthCallbackRoute", () => {
 	it("TC-6.1a GET /oauth/callback returns 501", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
@@ -24,9 +24,8 @@ describe("registerOauthCallbackRoute", () => {
 		}
 	});
 
-	// Story 4: un-skip once real session preHandler lands.
-	it.skip("TC-2.3b GET /oauth/callback reaches handler unauthenticated (exempt)", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+	it("TC-2.3b GET /oauth/callback reaches handler unauthenticated (exempt)", async () => {
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
@@ -45,7 +44,7 @@ describe("registerOauthCallbackRoute", () => {
 	});
 
 	it("TC-7.3a GET /oauth/callback passes without Origin header", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
@@ -66,7 +65,7 @@ describe("registerOauthCallbackRoute", () => {
 	});
 
 	it("TC-3.4a server-only mode: GET /oauth/callback responds", async () => {
-		const { app } = await buildServer({ inMemoryDb: true });
+		const { app } = await buildTestServer();
 		await app.ready();
 
 		try {
