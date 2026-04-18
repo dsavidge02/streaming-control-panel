@@ -42,7 +42,7 @@ export function PaletteSwitcher() {
 	}, [open]);
 
 	return (
-		<div ref={switcherRef} className="fixed right-4 top-4 z-50">
+		<div ref={switcherRef}>
 			{open ? (
 				<section
 					aria-label="Palette options"

@@ -47,13 +47,13 @@ export function Landing() {
 							<aside className="col-span-12 space-y-4 lg:col-span-4">
 								<SystemStatusPanel />
 								<ErrorRegistryPanel />
+								<PaletteSwitcher />
 							</aside>
 						</div>
 					</main>
 					<CapabilityGrid />
 					<Footer />
 				</div>
-				<PaletteSwitcher />
 			</div>
 		</SignInProvider>
 	);
