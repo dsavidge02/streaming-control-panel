@@ -16,7 +16,7 @@ pnpm install
 
 ## Troubleshooting
 
-If `pnpm start` fails with `NODE_MODULE_VERSION` mismatch after switching Electron versions or rebuilding, run `pnpm rebuild` to re-invoke the postinstall and rebuild `better-sqlite3` against the current Electron ABI.
+If a command fails with a `NODE_MODULE_VERSION` mismatch, rebuild `better-sqlite3` for the target runtime: `pnpm rebuild:electron` before `pnpm start`, `pnpm rebuild:node` before `pnpm test`. The two ABIs differ (Electron 41 = 145, Node 24 = 137), so switching between them requires an explicit rebuild each direction.
 
 ## Dev modes
 

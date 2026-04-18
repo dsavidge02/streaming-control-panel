@@ -7,7 +7,7 @@
 		"start": "pnpm rebuild:electron && electron-vite dev",
 		"dev": "pnpm rebuild:electron && electron-vite dev",
 		"rebuild:electron": "electron-rebuild -f -w better-sqlite3 --module-dir apps/panel/server",
-		"rebuild:node": "pnpm install --force --filter @panel/server better-sqlite3",
+		"rebuild:node": "pnpm --filter @panel/server rebuild better-sqlite3",
 		"format:check": "biome format .",
 		"format:fix": "biome format --write .",
 		"lint": "biome lint .",
