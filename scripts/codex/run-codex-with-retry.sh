@@ -36,6 +36,10 @@ CHECK_ARGS=()
 while (( $# > 0 )); do
   case "$1" in
     --delivery-marker|--expect-path|--link-grep-glob|--report-file)
+      if (( $# < 2 )); then
+        echo "run-codex-with-retry: flag $1 requires a value" >&2
+        exit 2
+      fi
       CHECK_ARGS+=("$1" "$2"); shift 2 ;;
     -*)
       echo "run-codex-with-retry: unknown flag $1" >&2; exit 2 ;;

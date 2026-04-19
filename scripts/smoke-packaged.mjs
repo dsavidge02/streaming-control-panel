@@ -15,6 +15,7 @@ const child = spawn(EXE, {
 let stdout = "";
 let stderr = "";
 let exited = false;
+let spawnError = null;
 
 child.stdout.on("data", (chunk) => {
 	stdout += chunk.toString();
@@ -26,12 +27,21 @@ child.stderr.on("data", (chunk) => {
 child.once("exit", () => {
 	exited = true;
 });
+child.once("error", (err) => {
+	spawnError = err;
+	exited = true;
+});
 
 try {
 	const deadline = Date.now() + 30_000;
 	let passed = false;
 
 	while (Date.now() < deadline) {
+		if (spawnError) {
+			throw new Error(
+				`failed to spawn packaged app at ${EXE}: ${spawnError.message}`,
+			);
+		}
 		if (exited) {
 			throw new Error("packaged app exited before backend became ready");
 		}

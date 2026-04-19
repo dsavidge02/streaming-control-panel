@@ -29,6 +29,80 @@ const releaseActionPatterns = [
 	/^ncipollo\/release-action(@|$)/,
 ];
 
+// pnpm subcommands that don't reference a user-defined script.
+const PNPM_BUILTINS = new Set([
+	"install",
+	"i",
+	"add",
+	"remove",
+	"rm",
+	"update",
+	"up",
+	"audit",
+	"outdated",
+	"list",
+	"ls",
+	"why",
+	"link",
+	"ln",
+	"unlink",
+	"exec",
+	"dlx",
+	"rebuild",
+	"rb",
+	"prune",
+	"store",
+	"fetch",
+	"doctor",
+	"root",
+	"bin",
+	"deploy",
+	"env",
+	"init",
+	"create",
+	"setup",
+	"import",
+	"patch",
+	"patch-commit",
+	"patch-remove",
+	"licenses",
+	"publish",
+	"pack",
+	"server",
+	"recursive",
+]);
+
+// Flags that consume the next token as their value.
+const PNPM_VALUE_FLAGS = new Set([
+	"-F",
+	"--filter",
+	"--filter-prod",
+	"-C",
+	"--dir",
+	"-w",
+	"--workspace",
+]);
+
+function extractScriptName(command: string): string | null {
+	const tokens = command.split(/\s+/).slice(1);
+	let i = 0;
+	while (i < tokens.length) {
+		const token = tokens[i];
+		if (!token) {
+			i += 1;
+			continue;
+		}
+		if (token.startsWith("-")) {
+			i += PNPM_VALUE_FLAGS.has(token) ? 2 : 1;
+			continue;
+		}
+		if (PNPM_BUILTINS.has(token)) return null;
+		if (token === "run") return tokens[i + 1] ?? null;
+		return token;
+	}
+	return null;
+}
+
 describe("ci.yml structural invariants", () => {
 	it("TC-5.3a: no packaging, release-publish, or cross-OS steps", () => {
 		expect(jobs.length).toBeGreaterThan(0);
@@ -62,13 +136,12 @@ describe("ci.yml structural invariants", () => {
 			const trimmed = step.run.trim();
 			if (!trimmed.startsWith("pnpm ")) continue;
 
-			const tokens = trimmed.split(/\s+/);
-			const subcommand = tokens[1];
-			if (subcommand === "install") continue;
+			const scriptName = extractScriptName(trimmed);
+			if (scriptName === null) continue;
 
 			expect(
-				scriptNames.has(subcommand as string),
-				`ci.yml runs \`${trimmed}\` but root package.json has no script named \`${subcommand}\`. ` +
+				scriptNames.has(scriptName),
+				`ci.yml runs \`${trimmed}\` but root package.json has no script named \`${scriptName}\`. ` +
 					`Define it in root package.json or change the workflow to call an existing script.`,
 			).toBe(true);
 		}

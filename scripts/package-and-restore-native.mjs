@@ -1,14 +1,31 @@
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..");
-const pnpmCli =
-	process.env.PNPM_CLI_PATH ??
-	"C:\\Users\\dsavi\\AppData\\Local\\fnm_multishells\\6536_1776434373367\\pnpm.cmd";
 const cmdExe = process.env.ComSpec ?? "C:\\Windows\\System32\\cmd.exe";
+
+function resolvePnpmCli() {
+	if (process.env.PNPM_CLI_PATH) return process.env.PNPM_CLI_PATH;
+	if (process.env.npm_execpath?.toLowerCase().includes("pnpm")) {
+		return process.env.npm_execpath;
+	}
+	const exe = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+	const pathDirs = (process.env.PATH ?? "").split(path.delimiter);
+	for (const dir of pathDirs) {
+		if (!dir) continue;
+		const candidate = path.join(dir, exe);
+		if (existsSync(candidate)) return candidate;
+	}
+	throw new Error(
+		`Unable to locate pnpm CLI. Set PNPM_CLI_PATH or ensure ${exe} is on PATH.`,
+	);
+}
+
+const pnpmCli = resolvePnpmCli();
 
 function runPnpm(args) {
 	const quotedArgs = args.map((arg) =>
