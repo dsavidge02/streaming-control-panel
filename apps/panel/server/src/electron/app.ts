@@ -17,11 +17,7 @@ protocol.registerSchemesAsPrivileged([
 	},
 ]);
 
-export async function startElectron(options: {
-	serverUrl: string;
-}): Promise<BrowserWindow> {
-	void options.serverUrl;
-
+export async function startElectron(): Promise<BrowserWindow> {
 	protocol.handle("app", (request) => {
 		const url = new URL(request.url);
 		const filePath = path.join(

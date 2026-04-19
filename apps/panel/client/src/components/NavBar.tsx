@@ -38,13 +38,7 @@ export function NavBar() {
 							key={tab.path}
 							aria-current={isActive ? "page" : undefined}
 							className="panel-focus border px-4 py-2 transition-transform hover:-translate-y-0.5"
-							onClick={() => {
-								if (tab.gated) {
-									navigate(tab.path);
-									return;
-								}
-								navigate(tab.path);
-							}}
+							onClick={() => navigate(tab.path)}
 							type="button"
 							style={{
 								background: isActive ? "var(--panel-primary)" : "transparent",

@@ -8,7 +8,6 @@ export async function buildTestServer(
 
 	return buildServer({
 		inMemoryDb: true,
-		timerMode: "fake",
 		...rest,
 		config: {
 			port: 0,

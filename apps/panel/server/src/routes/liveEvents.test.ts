@@ -2,6 +2,7 @@
 // use a real listener + fetch stream instead of Fastify injection.
 import { heartbeatEventSchema, PATHS } from "@panel/shared";
 import { describe, expect, it, vi } from "vitest";
+import { HEARTBEAT_INTERVAL_MS } from "./liveEvents.js";
 import { buildTestServer } from "../test/buildTestServer.js";
 
 interface LiveEventsStream {
@@ -46,6 +47,8 @@ async function openLiveEventsStream(): Promise<LiveEventsStream> {
 		}
 	};
 
+	// Splits the SSE stream on blank-line boundaries and resolves any waiters
+	// gated on event count.
 	const pump = (async () => {
 		while (true) {
 			const { done, value } = await reader.read();
@@ -112,7 +115,7 @@ describe("registerLiveEventsRoute", () => {
 		}
 	});
 
-	it("TC-6.3a heartbeat cadence: at least one heartbeat within 30s simulated time", async () => {
+	it("TC-6.3a heartbeat emits on connect and every 15s thereafter", async () => {
 		vi.useFakeTimers();
 		const intervalSpy = vi.spyOn(globalThis, "setInterval");
 
@@ -121,7 +124,10 @@ describe("registerLiveEventsRoute", () => {
 
 			try {
 				expect(stream.response.status).toBe(200);
-				expect(intervalSpy).toHaveBeenCalledWith(expect.any(Function), 15_000);
+				expect(intervalSpy).toHaveBeenCalledWith(
+					expect.any(Function),
+					HEARTBEAT_INTERVAL_MS,
+				);
 
 				await stream.waitForCount(1);
 

@@ -3,15 +3,24 @@
  * forward slashes in `asar list` output. Without this, parseable file listings
  * vary by host OS and break consumers that expect POSIX-style paths.
  *
- * Bug: not filed upstream as of 2026-04-19. Latest published `@electron/asar`
- * 4.2.0 and the current `main` branch still print raw `files[i]` values in the
- * list command, so Windows output remains backslash-delimited.
+ * Upstream status: not filed. Check `@electron/asar` > 4.2.0 release notes
+ * before deleting — if upstream ships a normalized `list` output, this patch
+ * can go. Latest published 4.2.0 and current `main` still print raw
+ * `files[i]`, so Windows output remains backslash-delimited.
  * Patched asar version range: all versions up to and including 4.2.0.
  */
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const asarCliPath = path.resolve("node_modules/@electron/asar/bin/asar.js");
+const repoRoot = path.resolve(
+	path.dirname(fileURLToPath(import.meta.url)),
+	"..",
+);
+const asarCliPath = path.resolve(
+	repoRoot,
+	"node_modules/@electron/asar/bin/asar.js",
+);
 
 if (!fs.existsSync(asarCliPath)) {
 	process.exit(0);

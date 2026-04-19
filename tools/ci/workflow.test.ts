@@ -150,7 +150,7 @@ describe("ci.yml structural invariants", () => {
 		}
 	});
 
-	it("TC-5.5b: workflow does not trigger on main-branch pushes", () => {
+	it("TC-5.5b: workflow does not define any push trigger", () => {
 		const on = workflow.on ?? {};
 		expect(Object.hasOwn(on, "push")).toBe(false);
 	});

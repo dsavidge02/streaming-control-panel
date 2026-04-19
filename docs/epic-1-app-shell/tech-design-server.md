@@ -915,7 +915,7 @@ Per Open Question Q2 in the index: the manual pattern is ~20 lines and has no su
 
 ### Test-Time Advancement (TC-6.3a)
 
-Vitest's `vi.useFakeTimers()` advances `setInterval`. A buildTestServer helper passes `{ timerMode: 'fake' }` to let tests drive heartbeat cadence deterministically.
+Vitest's `vi.useFakeTimers()` advances `setInterval`, and the test spies on the `setInterval` call site to mutation-verify the cadence constant. The SSE handler has a single code path — no test-mode branch — so production and test exercise the same logic.
 
 ### ACs Covered
 
@@ -1240,7 +1240,6 @@ export class AppError extends Error {
 export interface BuildServerOptions {
   config?: Partial<ServerConfig>;
   inMemoryDb?: boolean;
-  timerMode?: 'real' | 'fake';
 }
 
 export interface BuildServerResult {

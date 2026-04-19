@@ -11,7 +11,6 @@ export interface ServerConfig {
 	databasePath: string;
 	allowedOrigins: readonly string[];
 	cookieSecret: string;
-	timerMode: "real" | "fake";
 }
 
 function resolveUserDataDbPath(): string {
@@ -56,7 +55,6 @@ export function loadConfig(): ServerConfig {
 		databasePath: resolveUserDataDbPath(),
 		allowedOrigins: resolveAllowedOrigins(),
 		cookieSecret: resolveCookieSecret(),
-		timerMode: "real",
 	};
 }
 
