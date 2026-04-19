@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildServer } from "./buildServer.js";
+import { type buildServer, startServer } from "./buildServer.js";
 import { loadConfig } from "./config.js";
 
 describe("buildServer", () => {
@@ -10,25 +10,32 @@ describe("buildServer", () => {
 		expect(config.port).toBe(7077);
 	});
 
-	it("app.listen receives host and port from resolved config", async () => {
-		const result = await buildServer({ inMemoryDb: true });
-
-		try {
-			const listenSpy = vi
-				.spyOn(result.app, "listen")
-				.mockResolvedValue("ok" as never);
-
-			await result.app.listen({
-				host: result.config.host,
-				port: result.config.port,
-			});
-
-			expect(listenSpy).toHaveBeenCalledWith({
+	it("startServer wires config host+port into app.listen", async () => {
+		type BuiltServer = Awaited<ReturnType<typeof buildServer>>;
+		const listen = vi.fn().mockResolvedValue("ok");
+		const close = vi.fn().mockResolvedValue(undefined);
+		const build = vi.fn().mockResolvedValue({
+			app: {
+				listen,
+				close,
+			} as unknown as BuiltServer["app"],
+			db: {} as BuiltServer["db"],
+			config: {
+				...loadConfig(),
 				host: "127.0.0.1",
 				port: 7077,
-			});
-		} finally {
-			await result.app.close();
-		}
+			},
+		} satisfies BuiltServer);
+
+		const result = await startServer(build);
+
+		expect(build).toHaveBeenCalledTimes(1);
+		expect(listen).toHaveBeenCalledWith({
+			host: "127.0.0.1",
+			port: 7077,
+		});
+		expect(result.url).toBe("http://127.0.0.1:7077");
+		await result.close();
+		expect(close).toHaveBeenCalledTimes(1);
 	});
 });

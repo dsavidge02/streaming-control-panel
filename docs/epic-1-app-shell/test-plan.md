@@ -503,8 +503,8 @@ Chunk 4 flips every previously-skipped test to live:
 - `client/src/app/testBypass.test.ts` (3 tests — DEV-bypass forced-state parser + production-safety strip)
 - `client/tests/e2e/landing.spec.ts` (17 Playwright screenshot tests per the state matrix in `ui-spec.md` §Verification Surface)
 
-**Tests delivered this chunk:** 42 (22 component/unit + 3 testBypass + 17 Playwright)
-**Running total:** 83
+**Tests delivered this chunk:** 44 (24 component/unit + 3 testBypass + 17 Playwright)
+**Running total:** 85
 
 ### Chunk 6: Client-Side Router + Gating + Placeholders (Story 6)
 
@@ -524,7 +524,7 @@ Chunk 4 flips every previously-skipped test to live:
 - `client/src/app/router.test.tsx` (5 tests)
 
 **Tests delivered this chunk:** 5
-**Running total:** 88
+**Running total:** 90
 
 ### Chunk 7: Electron Main Process + Full-App Mode (Story 7)
 
@@ -542,7 +542,7 @@ Chunk 4 flips every previously-skipped test to live:
 - `server/src/electron/readme.test.ts` (1 test — TC-3.5a: `grep -E "pnpm start|pnpm --filter client dev|pnpm --filter server dev" README.md` equivalent via node:fs)
 
 **Tests delivered this chunk:** 1
-**Running total:** 89
+**Running total:** 91
 
 ### Chunk 8: Packaged Build for Developer OS (Story 8)
 
@@ -560,7 +560,7 @@ Chunk 4 flips every previously-skipped test to live:
 - `server/src/electron/readme-package.test.ts` (1 test — TC-4.3a: README contains packaging command name)
 
 **Tests delivered this chunk:** 1
-**Running total:** 90
+**Running total:** 92
 
 ### Chunk 9: CI Workflow (Story 9)
 
@@ -573,12 +573,12 @@ Chunk 4 flips every previously-skipped test to live:
 **Relevant Tech Design Sections:** server §CI.
 
 **Test files:**
-- `tools/ci/workflow.test.ts` (2 tests — TC-5.3a: no `electron-builder` or release-publish actions in ci.yml; TC-5.4a: every `run:` in ci.yml maps to a `pnpm` script defined in root package.json)
+- `tools/ci/workflow.test.ts` (3 tests — TC-5.3a: no `electron-builder` or release-publish actions in ci.yml; TC-5.4a: every `run:` in ci.yml maps to a `pnpm` script defined in root package.json; TC-5.5b: workflow does not trigger on `push` to `main`)
 
 Location note: this test is a workspace-root concern, not part of a package. Lives under `tools/ci/` with its own minimal `vitest.config.ts` or picked up by the root `pnpm test` fan-out via a workspace entry.
 
-**Tests delivered this chunk:** 2
-**Running total:** 92
+**Tests delivered this chunk:** 3
+**Running total:** 95
 
 ---
 
@@ -591,13 +591,13 @@ Location note: this test is a workspace-root concern, not part of a package. Liv
 | 2 | Stub Endpoints | 14 authored (some `.skip`ped until Chunk 4 un-skips) | 25 |
 | 3 | Data Layer | 8 | 33 |
 | 4 | Gate + Origin + Session | 8 new (+ 11 un-skipped from Chunk 2) | 41 |
-| 5 | Renderer + Landing + Playwright | 42 (22 component + 3 testBypass + 17 Playwright) | 83 |
-| 6 | Client Router | 5 | 88 |
-| 7 | Electron + Full-App | 1 | 89 |
-| 8 | Packaged Build | 1 | 90 |
-| 9 | CI | 2 | 92 |
+| 5 | Renderer + Landing + Playwright | 44 (24 component + 3 testBypass + 17 Playwright) | 85 |
+| 6 | Client Router | 5 | 90 |
+| 7 | Electron + Full-App | 1 | 91 |
+| 8 | Packaged Build | 1 | 92 |
+| 9 | CI | 3 | 95 |
 
-**Grand total: 92 automated tests across 22 test files** (75 Vitest + 17 Playwright).
+**Grand total: 95 automated tests across 22 test files** (78 Vitest + 17 Playwright).
 
 **Per-file totals (cross-check):**
 
@@ -616,18 +616,18 @@ Location note: this test is a workspace-root concern, not part of a package. Liv
 | `server/src/data/db.test.ts` | 8 |
 | `server/src/electron/readme.test.ts` | 1 |
 | `server/src/electron/readme-package.test.ts` | 1 |
-| `tools/ci/workflow.test.ts` | 2 |
+| `tools/ci/workflow.test.ts` | 3 |
 | `client/src/views/Landing.test.tsx` | 4 |
 | `client/src/components/SignInButton.test.tsx` | 6 |
 | `client/src/app/router.test.tsx` | 5 |
 | `client/src/palette/PaletteProvider.test.tsx` | 5 |
-| `client/src/palette/PaletteSwitcher.test.tsx` | 3 |
+| `client/src/palette/PaletteSwitcher.test.tsx` | 5 |
 | `client/src/api/fetchClient.test.ts` | 4 |
 | `client/src/app/testBypass.test.ts` | 3 |
 | `client/tests/e2e/landing.spec.ts` | 17 (Playwright) |
-| **Sum** | **92** ✓ |
+| **Sum** | **95** ✓ |
 
-Per-file sum (92) = per-chunk sum (92) = grand total (92). Reconciled. 75 Vitest + 17 Playwright.
+Per-file sum (95) = per-chunk sum (95) = grand total (95). Reconciled. 78 Vitest + 17 Playwright.
 
 ---
 

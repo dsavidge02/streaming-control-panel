@@ -76,7 +76,7 @@ Five research agents converged on the root cause + corrective architecture. Find
 
 **Canonical pattern:** VS Code's smoke test suite, Actual Budget's 2025 GitHub Actions flow ([actualbudget/actual#4674](https://github.com/actualbudget/actual/pull/4674)), and [spaceagetv/electron-playwright-example](https://github.com/spaceagetv/electron-playwright-example).
 
-**Gotcha:** Playwright's `firstWindow()` can hang on packaged exe with strict `contextIsolation` and no devtools ([microsoft/playwright#21117](https://github.com/microsoft/playwright/issues/21117), [#32759](https://github.com/microsoft/playwright/issues/32759)). Mitigations: `ELECTRON_ENABLE_LOGGING=1` to surface main-process throws; optional `SMOKE_MODE=1` env var main reads and `app.quit(0)`s after `did-finish-load`.
+**Gotcha:** Playwright's `firstWindow()` can hang on packaged exe with strict `contextIsolation` and no devtools ([microsoft/playwright#21117](https://github.com/microsoft/playwright/issues/21117), [#32759](https://github.com/microsoft/playwright/issues/32759)). Mitigations: `ELECTRON_ENABLE_LOGGING=1` to surface main-process throws; `SMOKE_MODE=1` is now wired in `apps/panel/server/src/index.ts` so the main window quits 1s after `did-finish-load`, letting the smoke script's fetch poll pass before teardown while `taskkill /F /T` remains the fallback cleanup path.
 
 **Docs to update:**
 - `docs/epic-1-app-shell/tech-design-server.md` §Verification Scripts — add `smoke:packaged` as a new gate between `verify` and `verify-all`.
@@ -101,6 +101,8 @@ Five research agents converged on the root cause + corrective architecture. Find
 ### 6. **Kill the dead `node_modules/better-sqlite3/**/*` asarUnpack pattern**
 
 **Decision:** Under pnpm (hoisted or not), better-sqlite3 lives under `.pnpm/`. The `node_modules/better-sqlite3/**/*` asarUnpack entry matches nothing. The active pattern is `**/*.node`. Keep both for defense OR prune the dead line; either is functionally equivalent, but pruning clarifies the config.
+
+**2026-04-19 cleanup outcome:** `electron-builder.yml` now keeps only `**/*.node` in `asarUnpack`. The dead `better-sqlite3` path patterns are gone.
 
 **Docs to update:**
 - `docs/epic-1-app-shell/tech-design-server.md` §Packaging — drop the `node_modules/better-sqlite3/**/*` line from the asarUnpack example YAML (or annotate it as "pnpm-non-hoisted defense, optional").
@@ -127,6 +129,8 @@ Five research agents converged on the root cause + corrective architecture. Find
 
 **Decision:** Fix round 1 added 7 runtime deps (`better-sqlite3`, `fastify`, `@fastify/cookie`, `fastify-type-provider-zod`, `drizzle-orm`, `iron-session`, `zod`) to root `package.json` so electron-builder's workspace traversal found them. This was a pnpm-symlink workaround. Under `node-linker=hoisted` (Decision #1), these should be removable.
 
+**2026-04-19 cleanup outcome:** The root `dependencies` block has been removed. `pnpm install`, `pnpm red-verify`, `pnpm verify`, and `pnpm verify-all` all stayed green locally without it; packaged-artifact verification remains the orchestrator's separate V2 pass.
+
 **Docs to update:**
 - When fix-4 lands: document the removal in the Story 8 transition checkpoint + flag the `dependencies` block should NOT be re-added by future stories without strong justification.
 
@@ -135,6 +139,15 @@ Five research agents converged on the root cause + corrective architecture. Find
 **Decision (deferred):** electron-builder 26.8+ includes `@electron/rebuild` internally; the explicit root devDependency is redundant. electron-builder's own advisory warning confirms this.
 
 **Why deferred:** We currently call the electron-rebuild CLI directly via `rebuild:electron` script, which needs the package to exist as a resolvable binary. If we switch to using electron-builder's bundled rebuild, the explicit dep can be dropped. Batch this with post-M3 release-engineering cleanup.
+
+### 11. **Retain local `@electron/asar` CLI slash-normalization patch**
+
+**Decision:** Keep `scripts/patch-local-asar-cli.mjs` for now. The installed package is `@electron/asar` 3.4.1; latest published npm version is 4.2.0; both the latest published CLI and the current upstream `main` branch still print raw `files[i]` values in the `list` command, so Windows output remains backslash-delimited.
+
+**Why retained:** Our packaging/tooling flow expects parseable, host-stable `asar list` output. Until upstream normalizes Windows paths or exposes a machine-readable mode, the local patch remains the least invasive fix.
+
+**Docs to update:**
+- `scripts/patch-local-asar-cli.mjs` — add an inline comment block describing the bug, the checked upstream status, and the patched version range.
 
 ---
 
@@ -145,7 +158,7 @@ Five research agents converged on the root cause + corrective architecture. Find
 - ✅ LANDED Story 8 cleanup: `CLAUDE.md` "What this repo is" updated with one-sentence `.npmrc` `node-linker=hoisted` note citing Decision #1.
 - ✅ LANDED Story 8 cleanup: `docs/epic-1-app-shell/test-plan.md` Chunk 8 cross-cutting verification note added for `pnpm smoke:packaged` alongside TC-4.1a/TC-4.2a (Decision #4).
 - ✅ LANDED Story 8 cleanup: `docs/epic-1-app-shell/stories/00-foundation.md` sidecar annotation appended noting retroactive DoD gap on `node-linker=hoisted` (Decision #1).
-- [ ] Post-Story-8 acceptance: update `docs/epic-1-app-shell/tech-design-server.md` §Packaging + §Native Rebuild Pipeline to reflect the corrected flow.
+- ✅ LANDED pre-Epic-2 cleanup: `docs/epic-1-app-shell/tech-design-server.md` §Packaging + §Native Rebuild Pipeline now reflect the hoisted-pnpm rebuild flow, Windows-only automation scope, and the pruned `asarUnpack` config.
 - [ ] When Story 9 (CI workflow) runs: `ci.yml` must include `pnpm smoke:packaged` as a gate (or accept that packaged-artifact verification is local-only until release-engineering epic).
 - [ ] When Epic 2 (Twitch OAuth + keytar) runs: keytar is another native dep; add to `pnpm.onlyBuiltDependencies` and verify the rebuild:electron script catches it.
 

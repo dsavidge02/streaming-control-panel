@@ -15,15 +15,11 @@ import { registerErrorHandler } from "./errorHandler.js";
 export interface BuildServerOptions {
 	config?: Partial<ServerConfig>;
 	inMemoryDb?: boolean;
-	timerMode?: "real" | "fake";
 }
 
 export async function buildServer(options: BuildServerOptions = {}) {
 	const config: ServerConfig = {
 		...loadConfig(),
-		...(options.timerMode !== undefined
-			? { timerMode: options.timerMode }
-			: {}),
 		...options.config,
 	};
 	const dbFilePath =
@@ -44,11 +40,14 @@ export async function buildServer(options: BuildServerOptions = {}) {
 	return { app, db, config };
 }
 
-export async function startServer(): Promise<{
+export async function startServer(
+	// Injectable for tests; production callers omit this argument.
+	buildFn: () => ReturnType<typeof buildServer> = buildServer,
+): Promise<{
 	url: string;
 	close: () => Promise<void>;
 }> {
-	const { app, config } = await buildServer();
+	const { app, config } = await buildFn();
 	await app.listen({ host: config.host, port: config.port });
 
 	return {

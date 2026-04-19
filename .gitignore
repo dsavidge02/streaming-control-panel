@@ -137,3 +137,4 @@ dist
 
 # TDD guard marker (per-cycle; written by orchestrator post-commit)
 .red-ref
+braindump.md

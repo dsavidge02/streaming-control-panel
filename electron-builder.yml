@@ -16,8 +16,6 @@ files:
 asar: true
 asarUnpack:
   - "**/*.node"
-  - "node_modules/better-sqlite3/**/*"
-  - "node_modules/.pnpm/**/node_modules/better-sqlite3/**/*"
 # Story 8 fix-4 retained the explicit swap-cycle even after enabling
 # `node-linker=hoisted`: the simplified `npmRebuild: true` path built
 # successfully, but the packaged app never reached server listen or

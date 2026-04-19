@@ -3,30 +3,18 @@ import { useInRouterContext, useLocation } from "react-router";
 
 import { readForcedState } from "@/app/testBypass";
 
-interface RedirectFlashProps {
-	onDismiss?: () => void;
-	redirectedFrom?: string | null;
-}
-
-function Flash({
-	onDismiss,
-	redirectedFrom,
-}: {
-	onDismiss?: () => void;
-	redirectedFrom: string;
-}) {
+function Flash({ redirectedFrom }: { redirectedFrom: string }) {
 	const [visible, setVisible] = useState(true);
 
 	useEffect(() => {
 		const timeoutId = window.setTimeout(() => {
 			setVisible(false);
-			onDismiss?.();
 		}, 2400);
 
 		return () => {
 			window.clearTimeout(timeoutId);
 		};
-	}, [onDismiss]);
+	}, []);
 
 	if (!visible) {
 		return null;
@@ -45,9 +33,7 @@ function Flash({
 	);
 }
 
-function RouterRedirectFlash({
-	onDismiss,
-}: Pick<RedirectFlashProps, "onDismiss">) {
+function RouterRedirectFlash() {
 	const location = useLocation();
 	const redirectedFrom = useMemo(() => {
 		const state = location.state as { redirectedFrom?: string } | null;
@@ -55,40 +41,17 @@ function RouterRedirectFlash({
 	}, [location.state]);
 
 	return redirectedFrom ? (
-		<Flash
-			key={redirectedFrom}
-			onDismiss={onDismiss}
-			redirectedFrom={redirectedFrom}
-		/>
+		<Flash key={redirectedFrom} redirectedFrom={redirectedFrom} />
 	) : null;
 }
 
-export function RedirectFlash({
-	onDismiss,
-	redirectedFrom,
-}: RedirectFlashProps) {
+export function RedirectFlash() {
 	const forcedState = readForcedState()?.redirectedFrom ?? null;
 	const inRouterContext = useInRouterContext();
 
 	if (forcedState) {
-		return (
-			<Flash
-				key={forcedState}
-				onDismiss={onDismiss}
-				redirectedFrom={forcedState}
-			/>
-		);
+		return <Flash key={forcedState} redirectedFrom={forcedState} />;
 	}
 
-	if (redirectedFrom) {
-		return (
-			<Flash
-				key={redirectedFrom}
-				onDismiss={onDismiss}
-				redirectedFrom={redirectedFrom}
-			/>
-		);
-	}
-
-	return inRouterContext ? <RouterRedirectFlash onDismiss={onDismiss} /> : null;
+	return inRouterContext ? <RouterRedirectFlash /> : null;
 }

@@ -4,7 +4,7 @@
 
 An installed Electron desktop app that lets a solo Twitch streamer run their channel from one panel: channel management, live moderation, clip creation, custom `!commands`, and a welcome bot. Single-user, local-first, no hosted backend — Fastify server runs inside the Electron main process on `127.0.0.1:7077`. See `docs/prd.md` for product scope and `docs/architecture.md` for the technical world.
 
-**Stack:** Electron 41, Node 24 LTS, Fastify 5, React 19 + Vite 8, Tailwind 4.1 + shadcn/ui, SQLite (better-sqlite3) + Drizzle 0.45, Zod 4, iron-session 8, Vitest 4, Biome 2, pnpm 10 workspace. No code is implemented yet — the repo is currently at Epic 1 Story 0 scaffolding.
+**Stack:** Electron 41, Node 24 LTS, Fastify 5, React 19 + Vite 8, Tailwind 4.1 + shadcn/ui, SQLite (better-sqlite3) + Drizzle 0.45, Zod 4, iron-session 8, Vitest 4, Biome 2, pnpm 10 workspace. Epic 1 is complete — the app shell, server gate, data layer, renderer, router, Electron shell, packaged artifact, and CI workflow are implemented and merged on `main`.
 
 **pnpm linker:** Root `.npmrc` must set `node-linker=hoisted`. The default symlinked `.pnpm/` store breaks electron-builder's traversal and `@electron/rebuild`'s write-back path; hoisted produces an npm-flat `node_modules/` that packaging tooling understands natively. See `docs/epic-1-app-shell/stories/decisions-log.md` Decision #1.
 
@@ -54,9 +54,7 @@ User-scoped preferences and feedback memories live outside the repo at `~/.claud
 
 ## Current state — before starting work
 
-Epic 1 is in progress. Story 0 (foundation scaffolding) and Story 1 (Fastify server + central route wiring) are accepted and committed; cumulative test count is 11 (3 shared + 8 server). Epic 1's remaining stories (2-9) are pending. See `docs/epic-1-app-shell/team-impl-log.md` for the orchestration log and `docs/epic-1-app-shell/stories/coverage.md` for the AC/TC ownership map + cross-story dependency chain.
-
-`docs/epic-1-app-shell/RESTART-INSTRUCTIONS.md` is stale (Story 0 accepted) — slated for deletion on next cleanup.
+Epic 1 is complete. Stories 0-9 were accepted and merged to `main` via PR #1 at `6df71f8` on 2026-04-18. Cumulative tests are 78 Vitest (4 shared + 3 tools/ci + 39 server + 32 client), 17 Playwright baselines, and 1 `pnpm smoke:packaged` boot gate. Epic 2 (Twitch OAuth & Tenant Onboarding) is next and has not started yet. See `docs/epic-1-app-shell/team-impl-log.md` for the orchestration log and `docs/epic-1-app-shell/stories/coverage.md` for the AC/TC ownership map + cross-story dependency chain.
 
 ## Codex harness
 

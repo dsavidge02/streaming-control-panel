@@ -561,7 +561,7 @@ export function usePalette() {
 
 ```typescript
 import { type PaletteId } from './palettes.js';
-import { getPalettePreference, putPalettePreference } from '../api/paletteApi.js';
+import { getPalettePreference, putPalettePreference } from '../palette/paletteApi.js';
 
 const LOCAL_STORAGE_KEY = 'panel.palette';
 
@@ -809,7 +809,7 @@ export async function postAuthLogin(): Promise<ApiResult<{ flow?: string }>> {
 }
 ```
 
-### Palette Client (`src/api/paletteApi.ts`)
+### Palette Client (`src/palette/paletteApi.ts`)
 
 Epic 1: no-op stubs. Epic 2+ fills them.
 

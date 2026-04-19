@@ -80,18 +80,9 @@ packages:
 }
 ```
 
-The `postinstall` hook invokes `electron-builder install-app-deps`, which internally uses `@electron/rebuild` 4.0.3 to rebuild native modules (notably `better-sqlite3`) against Electron 41's Node ABI. Belt-and-suspenders with electron-builder's own `npmRebuild: true` at package time.
+The `postinstall` hook invokes `electron-builder install-app-deps`, which internally uses `@electron/rebuild` 4.0.3 to rebuild native modules (notably `better-sqlite3`) against Electron 41's Node ABI. At package time the explicit `pnpm rebuild:electron` script (prepended to `pnpm package`) is the canonical path; `electron-builder.yml` keeps `npmRebuild: false` because its internal rebuild does not reliably update pnpm-hoisted bindings (see Native Rebuild Pipeline section and decisions-log Decision #5).
 
-**Staged delivery of `test:e2e`:** Story 0 ships the placeholder below so `verify-all` is a real command from day one. Story 5 replaces the script with `playwright test` (as shown above) when the Playwright harness and 17 baseline screenshots land.
-
-**`scripts/test-e2e-placeholder.mjs`** (Story 0 through Story 4):
-
-```js
-console.log('SKIP: Playwright e2e suite not yet implemented — first suite lands in Story 5 (D3)');
-process.exit(0);
-```
-
-Story 5 deletes this file and updates the `test:e2e` script to `playwright test`.
+**Staged delivery of `test:e2e`:** Story 5 wires the `test:e2e` script to `playwright test` once the Playwright harness and 17 baseline screenshots land. Prior to Story 5 the script is absent from the `test:e2e` slot; `verify-all` composes only `verify` plus real suites.
 
 **`scripts/guard-no-test-changes.mjs`** (Story 4, first story with TDD):
 
@@ -152,9 +143,7 @@ apps/panel/shared/
 └── src/
     ├── index.ts
     ├── errors/
-    │   ├── codes.ts                 # const map of error codes → HTTP status
-    │   ├── AppError.ts              # AppError class
-    │   └── envelope.ts              # Zod schema for { error: { code, message } }
+    │   └── codes.ts                 # consolidated: error-code map + AppError class + errorEnvelopeSchema (envelope.ts and AppError.ts were merged into codes.ts during implementation)
     ├── http/
     │   ├── paths.ts                 # route path constants
     │   └── gateExempt.ts            # GATE_EXEMPT_PATHS frozen array
@@ -273,10 +262,8 @@ files:
   - package.json
 asar: true
 asarUnpack:
-  - "**/*.node"
-  - "node_modules/better-sqlite3/**/*"
-  - "node_modules/.pnpm/**/node_modules/better-sqlite3/**/*"
-npmRebuild: false       # Story 8 fix round 2: rebuild:electron handles native rebuild before builder runs
+  - "**/*.node"          # only load-bearing pattern under hoisted pnpm; explicit better-sqlite3 paths were redundant and have been pruned (decisions-log Decision #6)
+npmRebuild: false       # explicit rebuild:electron handles native rebuild before builder runs (decisions-log Decision #5)
 win:
   # Required on Windows hosts without SeCreateSymbolicLink privilege.
   # Without this, electron-builder-binaries extracting winCodeSign-*.7z
@@ -296,6 +283,8 @@ linux:
 
 Per AC-4.1, the packaged artifact format is host-OS-appropriate. Cross-OS installers and code signing are out of Epic 1 scope (deferred to post-M3 release engineering).
 
+**Scope note — Windows-only packaging automation.** Epic 1 targets Windows-only host-OS packaging. Cross-OS (macOS/Linux) installer support is deferred to the post-M3 release-engineering epic. Running `pnpm package` on non-Windows hosts is not supported in Epic 1; the supporting scripts (`scripts/package-and-restore-native.mjs`, `scripts/smoke-packaged.mjs`, `scripts/touch-better-sqlite3-binding.mjs`) are Windows-only.
+
 ### Native Rebuild Pipeline
 
 ```
@@ -308,12 +297,12 @@ pnpm package
    └── pnpm rebuild:electron → electron-rebuild -f -w better-sqlite3 → Electron ABI binding in pnpm store
    └── electron-vite build
    └── electron-builder
-       └── npmRebuild: false  (see note below)
+       └── npmRebuild: false  (explicit; see decisions-log Decision #5)
        └── asar pack with asarUnpack exclusion for *.node
        └── per-OS installer output
 ```
 
-`@electron/rebuild` invoked via `electron-builder`'s `npmRebuild: true` does not reliably update pnpm-hoisted bindings: it logs `finished` but the `.node` file in the pnpm store retains the Node ABI, shipping a broken artifact. The explicit `rebuild:electron` script (Story 7) is the canonical path — it rewrites the pnpm-store binding in-place with Electron ABI — and is prepended to the `package` script. `npmRebuild: false` in `electron-builder.yml` disables the unreliable duplicate rebuild.
+`@electron/rebuild` invoked via `electron-builder`'s internal rebuild path does not reliably update pnpm-hoisted bindings: it logs `finished` but the `.node` file in the pnpm store retains the Node ABI, shipping a broken artifact. The explicit `pnpm rebuild:electron` script (Story 7) is the canonical path — it rewrites the pnpm-store binding in-place with Electron ABI — and is prepended to `pnpm package`. `npmRebuild: false` in `electron-builder.yml` is therefore explicit, disabling the unreliable duplicate rebuild (see decisions-log Decision #5).
 
 If the dev installs the repo fresh and `pnpm start` fails with a `NODE_MODULE_VERSION` mismatch, the remediation is `pnpm rebuild` (which re-invokes the postinstall). This is covered in the README dev-mode section (AC-3.5).
 
@@ -715,10 +704,10 @@ export const ERROR_CODES = {
 export type ErrorCode = keyof typeof ERROR_CODES;
 ```
 
-### `AppError` Class
+### `AppError` Class (defined in `codes.ts`)
 
 ```typescript
-// apps/panel/shared/src/errors/AppError.ts
+// apps/panel/shared/src/errors/codes.ts (consolidated)
 import { ERROR_CODES, type ErrorCode } from './codes.js';
 
 export class AppError extends Error {
@@ -734,10 +723,10 @@ export class AppError extends Error {
 }
 ```
 
-### Envelope Schema (shared with renderer)
+### Envelope Schema (shared with renderer, defined in `codes.ts`)
 
 ```typescript
-// apps/panel/shared/src/errors/envelope.ts
+// apps/panel/shared/src/errors/codes.ts (consolidated)
 import { z } from 'zod';
 import { ERROR_CODES } from './codes.js';
 
@@ -926,7 +915,7 @@ Per Open Question Q2 in the index: the manual pattern is ~20 lines and has no su
 
 ### Test-Time Advancement (TC-6.3a)
 
-Vitest's `vi.useFakeTimers()` advances `setInterval`. A buildTestServer helper passes `{ timerMode: 'fake' }` to let tests drive heartbeat cadence deterministically.
+Vitest's `vi.useFakeTimers()` advances `setInterval`, and the test spies on the `setInterval` call site to mutation-verify the cadence constant. The SSE handler has a single code path — no test-mode branch — so production and test exercise the same logic.
 
 ### ACs Covered
 
@@ -1225,13 +1214,15 @@ Ground-level types and function signatures that Story 0 and Story 1 seed as stub
 export const PATHS = {
   auth: { login: '/auth/login' },
   oauth: { callback: '/oauth/callback' },
-  liveEvents: '/live/events',
+  live: { events: '/live/events' },
 } as const;
 
 export type PathValue = typeof PATHS[keyof typeof PATHS] | string;
 ```
 
-### `shared/src/errors/AppError.ts`
+### `shared/src/errors/codes.ts` (consolidated surface)
+
+`codes.ts` exports the error-code map, the `AppError` class, and the Zod `errorEnvelopeSchema` from a single module. The separate `AppError.ts` and `envelope.ts` files shown in earlier drafts were consolidated into `codes.ts` during implementation to keep the error surface in one place.
 
 ```typescript
 import { ERROR_CODES, type ErrorCode } from './codes.js';
@@ -1249,7 +1240,6 @@ export class AppError extends Error {
 export interface BuildServerOptions {
   config?: Partial<ServerConfig>;
   inMemoryDb?: boolean;
-  timerMode?: 'real' | 'fake';
 }
 
 export interface BuildServerResult {

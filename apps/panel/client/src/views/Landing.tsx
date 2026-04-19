@@ -1,5 +1,3 @@
-﻿import { useState } from "react";
-
 import { CapabilityGrid } from "@/components/CapabilityGrid";
 import { ErrorRegistryPanel } from "@/components/ErrorRegistryPanel";
 import { Footer } from "@/components/Footer";
@@ -22,8 +20,6 @@ function BackgroundLayers() {
 }
 
 export function Landing() {
-	const [redirectedFrom, setRedirectedFrom] = useState<string | null>(null);
-
 	return (
 		<SignInProvider>
 			<div
@@ -34,11 +30,8 @@ export function Landing() {
 				<BackgroundLayers />
 				<Marquee />
 				<div className="relative z-10">
-					<NavBar onGatedNavigate={setRedirectedFrom} />
-					<RedirectFlash
-						redirectedFrom={redirectedFrom}
-						onDismiss={() => setRedirectedFrom(null)}
-					/>
+					<NavBar />
+					<RedirectFlash />
 					<main className="px-5 pb-8 pt-4 sm:px-8 lg:px-10">
 						<div className="grid grid-cols-12 gap-6">
 							<section className="col-span-12 lg:col-span-8">

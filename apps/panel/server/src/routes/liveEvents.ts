@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { PATHS } from "@panel/shared";
 import { registerRoute } from "../server/registerRoute.js";
 
-const HEARTBEAT_INTERVAL_MS = 15_000;
+export const HEARTBEAT_INTERVAL_MS = 15_000;
 
 export function registerLiveEventsRoute(app: FastifyInstance): void {
 	registerRoute(app, {
@@ -25,19 +25,17 @@ export function registerLiveEventsRoute(app: FastifyInstance): void {
 				);
 			};
 
-			emitHeartbeat();
-			if (req.server.config.timerMode === "fake") {
-				reply.raw.end();
-				return reply;
-			}
-
-			const interval = setInterval(() => {
+			let interval: NodeJS.Timeout | undefined;
+			req.raw.on("close", () => {
+				if (interval !== undefined) {
+					clearInterval(interval);
+				}
+			});
+			interval = setInterval(() => {
 				emitHeartbeat();
 			}, HEARTBEAT_INTERVAL_MS);
 
-			req.raw.on("close", () => {
-				clearInterval(interval);
-			});
+			emitHeartbeat();
 
 			return reply;
 		},
