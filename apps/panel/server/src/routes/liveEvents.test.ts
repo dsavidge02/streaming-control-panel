@@ -1,6 +1,94 @@
+// `app.inject()` buffers SSE bodies until the socket closes, so cadence tests
+// use a real listener + fetch stream instead of Fastify injection.
 import { heartbeatEventSchema, PATHS } from "@panel/shared";
 import { describe, expect, it, vi } from "vitest";
 import { buildTestServer } from "../test/buildTestServer.js";
+
+interface LiveEventsStream {
+	app: Awaited<ReturnType<typeof buildTestServer>>["app"];
+	events: string[];
+	response: Response;
+	waitForCount: (count: number) => Promise<void>;
+	close: () => Promise<void>;
+}
+
+async function openLiveEventsStream(): Promise<LiveEventsStream> {
+	const { sealFixtureSession } = await import("../test/sealFixtureSession.js");
+	const sealedSession = await sealFixtureSession();
+	const { app } = await buildTestServer();
+	await app.ready();
+
+	const baseUrl = await app.listen({ host: "127.0.0.1", port: 0 });
+	const controller = new AbortController();
+	const response = await fetch(`${baseUrl}${PATHS.live.events}`, {
+		headers: {
+			cookie: `panel_session=${sealedSession}`,
+		},
+		signal: controller.signal,
+	});
+	const reader = response.body?.getReader();
+	if (!reader) {
+		await app.close();
+		throw new Error("Expected a readable SSE response body");
+	}
+
+	const decoder = new TextDecoder();
+	const events: string[] = [];
+	const waiters = new Map<number, () => void>();
+	let buffer = "";
+
+	const resolveWaiters = () => {
+		for (const [count, resolve] of waiters) {
+			if (events.length >= count) {
+				waiters.delete(count);
+				resolve();
+			}
+		}
+	};
+
+	const pump = (async () => {
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			buffer += decoder.decode(value, { stream: true });
+
+			let boundary = buffer.indexOf("\n\n");
+			while (boundary !== -1) {
+				const chunk = buffer.slice(0, boundary).trim();
+				buffer = buffer.slice(boundary + 2);
+				if (chunk) {
+					events.push(chunk);
+					resolveWaiters();
+				}
+				boundary = buffer.indexOf("\n\n");
+			}
+		}
+	})();
+
+	return {
+		app,
+		events,
+		response,
+		waitForCount: (count) =>
+			events.length >= count
+				? Promise.resolve()
+				: new Promise((resolve) => {
+						waiters.set(count, resolve);
+					}),
+		close: async () => {
+			controller.abort();
+			try {
+				await pump;
+			} catch (error) {
+				if (!(error instanceof DOMException && error.name === "AbortError")) {
+					throw error;
+				}
+			}
+			await app.close();
+		},
+	};
+}
 
 describe("registerLiveEventsRoute", () => {
 	it("TC-6.3b unauthenticated subscribe returns 401", async () => {
@@ -26,53 +114,47 @@ describe("registerLiveEventsRoute", () => {
 
 	it("TC-6.3a heartbeat cadence: at least one heartbeat within 30s simulated time", async () => {
 		vi.useFakeTimers();
+		const intervalSpy = vi.spyOn(globalThis, "setInterval");
 
 		try {
-			const { sealFixtureSession } = await import(
-				"../test/sealFixtureSession.js"
-			);
-			const sealedSession = await sealFixtureSession();
-			const { app } = await buildTestServer();
-			await app.ready();
+			const stream = await openLiveEventsStream();
 
 			try {
-				const responsePromise = app.inject({
-					method: "GET",
-					url: PATHS.live.events,
-					headers: {
-						cookie: `panel_session=${sealedSession}`,
-					},
-				});
+				expect(stream.response.status).toBe(200);
+				expect(intervalSpy).toHaveBeenCalledWith(expect.any(Function), 15_000);
 
-				await vi.advanceTimersByTimeAsync(30_000);
+				await stream.waitForCount(1);
 
-				const response = await responsePromise;
-				expect(response.body).toContain("event: heartbeat");
+				await vi.advanceTimersByTimeAsync(16_000);
+				await stream.waitForCount(2);
+				expect(stream.events).toHaveLength(2);
+
+				await vi.advanceTimersByTimeAsync(15_000);
+				await stream.waitForCount(3);
+				expect(stream.events).toHaveLength(3);
 			} finally {
-				await app.close();
+				await stream.close();
 			}
 		} finally {
+			intervalSpy.mockRestore();
 			vi.useRealTimers();
 		}
 	});
 
 	it("TC-6.4a heartbeat event payload parses against the shared SSE schema", async () => {
-		const { sealFixtureSession } = await import(
-			"../test/sealFixtureSession.js"
-		);
-		const sealedSession = await sealFixtureSession();
-		const { app } = await buildTestServer();
-		await app.ready();
+		const stream = await openLiveEventsStream();
 
 		try {
-			const response = await app.inject({
-				method: "GET",
-				url: PATHS.live.events,
-				headers: {
-					cookie: `panel_session=${sealedSession}`,
-				},
-			});
-			const firstDataLine = response.body
+			expect(stream.response.status).toBe(200);
+			await stream.waitForCount(1);
+
+			const firstEvent = stream.events[0];
+			expect(firstEvent).toBeDefined();
+			if (!firstEvent) {
+				throw new Error("Expected at least one SSE event");
+			}
+
+			const firstDataLine = firstEvent
 				.split("\n")
 				.find((line) => line.startsWith("data: "));
 
@@ -87,7 +169,7 @@ describe("registerLiveEventsRoute", () => {
 			expect(parsed.type).toBe("heartbeat");
 			expect(parsed.data).toEqual({});
 		} finally {
-			await app.close();
+			await stream.close();
 		}
 	});
 

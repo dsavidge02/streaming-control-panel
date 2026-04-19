@@ -1,3 +1,13 @@
+/**
+ * Monkey-patches @electron/asar's CLI to normalize Windows backslash paths to
+ * forward slashes in `asar list` output. Without this, parseable file listings
+ * vary by host OS and break consumers that expect POSIX-style paths.
+ *
+ * Bug: not filed upstream as of 2026-04-19. Latest published `@electron/asar`
+ * 4.2.0 and the current `main` branch still print raw `files[i]` values in the
+ * list command, so Windows output remains backslash-delimited.
+ * Patched asar version range: all versions up to and including 4.2.0.
+ */
 import fs from "node:fs";
 import path from "node:path";
 

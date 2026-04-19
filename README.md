@@ -23,7 +23,7 @@ If a command fails with a `NODE_MODULE_VERSION` mismatch, rebuild `better-sqlite
 | Command | Surface | Notes |
 | --- | --- | --- |
 | `pnpm --filter @panel/client dev` | Renderer-only browser view at `http://localhost:5173` | Story 5 landing renderer for UI iteration without Electron or Fastify |
-| `pnpm --filter @panel/server dev` | Fastify standalone on `http://127.0.0.1:7077` | Server-side iteration without the Electron shell |
+| `pnpm --filter @panel/server dev` | Fastify standalone on `http://127.0.0.1:7077` | Server-side iteration without the Electron shell; writes `os.tmpdir()/panel-dev.sqlite` when Electron is not loaded, so delete it manually if these accumulate |
 | `pnpm start` | Full Electron app - Fastify (`:7077`) + Vite renderer (`:5173`) + main process with HMR | Renderer source edits hot-reload without Electron restart |
 
 ## Continuous Integration
@@ -45,4 +45,5 @@ Once enabled, a PR cannot be merged until the `CI / verify` check is green on it
 
 ## Packaging
 
-`pnpm package` produces an Electron artifact for your host OS in `dist/packaged/`. Cross-OS installers and code signing are deferred until after M3.
+Epic 1 ships Windows-only packaging automation. `pnpm package` produces the Windows artifact in `dist/packaged/`, while macOS/Linux artifacts remain buildable via `electron-builder --mac` and `electron-builder --linux`. Smoke verification stays Windows-only until the post-M3 release-engineering epic.
+Cross-OS installers and code signing are deferred until after M3.

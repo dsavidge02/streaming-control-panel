@@ -18,7 +18,15 @@ if (!gotLock) {
 		.whenReady()
 		.then(async () => {
 			const server = await startServer();
-			await startElectron({ serverUrl: server.url });
+			const mainWindow = await startElectron({ serverUrl: server.url });
+
+			if (process.env.SMOKE_MODE === "1") {
+				mainWindow.webContents.once("did-finish-load", () => {
+					setTimeout(() => {
+						app.quit();
+					}, 1_000);
+				});
+			}
 		})
 		.catch((err) => {
 			// eslint-disable-next-line no-console

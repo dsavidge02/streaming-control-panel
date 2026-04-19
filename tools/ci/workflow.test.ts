@@ -10,7 +10,10 @@ const rootPackageJsonPath = resolve(repoRoot, "package.json");
 
 type WorkflowStep = { run?: string; uses?: string };
 type WorkflowJob = { "runs-on"?: unknown; steps?: WorkflowStep[] };
-type Workflow = { jobs?: Record<string, WorkflowJob> };
+type Workflow = {
+	jobs?: Record<string, WorkflowJob>;
+	on?: Record<string, unknown>;
+};
 
 const workflow = load(readFileSync(workflowPath, "utf8")) as Workflow;
 const rootScripts =
@@ -145,5 +148,10 @@ describe("ci.yml structural invariants", () => {
 					`Define it in root package.json or change the workflow to call an existing script.`,
 			).toBe(true);
 		}
+	});
+
+	it("TC-5.5b: workflow does not trigger on main-branch pushes", () => {
+		const on = workflow.on ?? {};
+		expect(Object.hasOwn(on, "push")).toBe(false);
 	});
 });

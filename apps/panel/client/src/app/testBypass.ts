@@ -29,7 +29,6 @@ export function isTestBypassEnabled(): boolean {
 
 export function readForcedState(): ForcedStateResolved | null {
 	if (!isTestBypassEnabled()) return null;
-	if (!import.meta.env.DEV) return null;
 
 	const params = new URLSearchParams(window.location.search);
 	const forceState = params.get("forceState") as ForcedState | null;

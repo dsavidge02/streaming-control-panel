@@ -1,4 +1,4 @@
-import { net, protocol } from "electron";
+import { type BrowserWindow, net, protocol } from "electron";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { createMainWindow } from "./window.js";
@@ -19,7 +19,7 @@ protocol.registerSchemesAsPrivileged([
 
 export async function startElectron(options: {
 	serverUrl: string;
-}): Promise<void> {
+}): Promise<BrowserWindow> {
 	void options.serverUrl;
 
 	protocol.handle("app", (request) => {
@@ -33,7 +33,7 @@ export async function startElectron(options: {
 	});
 
 	try {
-		createMainWindow();
+		return createMainWindow();
 	} catch (err) {
 		// eslint-disable-next-line no-console
 		console.error("createMainWindow failed:", err);

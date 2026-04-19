@@ -1,6 +1,4 @@
-interface NavBarProps {
-	onGatedNavigate?: (path: string | null) => void;
-}
+import { useNavigate } from "react-router";
 
 const tabs = [
 	{ label: "HOME", path: "/", gated: false },
@@ -8,7 +6,9 @@ const tabs = [
 	{ label: "OPTIONS", path: "/settings", gated: true },
 ] as const;
 
-export function NavBar({ onGatedNavigate }: NavBarProps) {
+export function NavBar() {
+	const navigate = useNavigate();
+
 	return (
 		<nav className="relative z-10 flex flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-10">
 			<div className="flex items-center gap-3">
@@ -40,10 +40,10 @@ export function NavBar({ onGatedNavigate }: NavBarProps) {
 							className="panel-focus border px-4 py-2 transition-transform hover:-translate-y-0.5"
 							onClick={() => {
 								if (tab.gated) {
-									onGatedNavigate?.(tab.path);
+									navigate(tab.path);
 									return;
 								}
-								onGatedNavigate?.(null);
+								navigate(tab.path);
 							}}
 							type="button"
 							style={{

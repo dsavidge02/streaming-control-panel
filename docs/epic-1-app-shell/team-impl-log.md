@@ -483,9 +483,9 @@ All six are candidates for the **`docs/v2-findings/`** directory post-acceptance
 
 ### Story 0 — attempt 2 (started 2026-04-17)
 
-Fresh Claude Code session picked up at state `BETWEEN_STORIES` per RESTART-INSTRUCTIONS. On session boot:
+Fresh Claude Code session picked up at state `BETWEEN_STORIES` per the prior restart handoff note. On session boot:
 
-- Team directory `~/.claude/teams/epic-1-app-shell/` was **not present** — the prior session's team did not persist across the Claude Code process boundary. Recreated via `TeamCreate` (team_name `epic-1-app-shell`, lead `team-lead@epic-1-app-shell`). The RESTART doc claim that the team persists is false on this machine; the log + updated templates persist, but the team itself has to be recreated each fresh session. Flagging for future Epic 1 sessions.
+- Team directory `~/.claude/teams/epic-1-app-shell/` was **not present** — the prior session's team did not persist across the Claude Code process boundary. Recreated via `TeamCreate` (team_name `epic-1-app-shell`, lead `team-lead@epic-1-app-shell`). The old restart note's claim that the team persists is false on this machine; the log + updated templates persist, but the team itself has to be recreated each fresh session. Flagging for future Epic 1 sessions.
 - Codex ping with the mandatory `--dangerously-bypass-approvals-and-sandbox` flag returned `PONG` cleanly — network + process execution confirmed working under the hardened invocation shape.
 - Git baseline re-verified: `c06d9f5` on `main`, clean working tree (docs/, .claude/, .github/, braindump.md, CLAUDE.md untracked — all source docs, not Story 0 output).
 - Fresh `story-0-implementer` teammate spawned on the rebuilt team; task delivered via `SendMessage` per the captured idle-notification pattern (the `Agent` tool's `prompt` field does not reliably auto-deliver on this machine).
@@ -774,7 +774,7 @@ Zero Major, zero Minor, zero accepted-risk, zero defer.
 | 3 | Coupled cookie-secret defaults + `inMemoryDb+VITEST` override in `buildServer.ts` | Major | **fixed** | `FIXTURE_COOKIE_SECRET` exported from `sealFixtureSession.ts`; `buildTestServer` explicitly passes `config: { cookieSecret: FIXTURE_COOKIE_SECRET }`; VITEST override block deleted from `buildServer.ts`; production bootstrap no longer sniffs test context. Route tests migrated from `buildServer({ inMemoryDb: true })` → `buildTestServer()` (14 call sites across `auth.test.ts`, `liveEvents.test.ts`, `oauthCallback.test.ts`) to achieve clean separation — `inMemoryDb` retains its original Story 3 meaning as a SQLite path selector only. |
 | 4 | TC-7.4a uses exempt `/auth/login` → can't discriminate preHandler order | Major | **fixed** | Rewritten in place: registers inline `POST /test-gated-post` (new non-exempt gated route), asserts 403 `ORIGIN_REJECTED` with no cookie + bad Origin. Reversed order would throw 401 first → assertion fails → genuine discrimination power. |
 | 5 | 8 stale "un-skip once Story 4 lands" comments | Minor | **fixed** | Removed from `auth.test.ts` (4), `liveEvents.test.ts` (2), `oauthCallback.test.ts` (1), `registerRoute.test.ts` (1). |
-| 6 | `RESTART-INSTRUCTIONS.md` deletion (out of scope per story DoD) | Minor | **accepted-risk** | Log's Run Metadata already marked the file stale-slated-for-cleanup; Codex's deletion aligns with that cleanup intent. No re-add. |
+| 6 | Stale restart handoff doc deletion (out of scope per story DoD) | Minor | **accepted-risk** | Run Metadata already marked the doc stale-slated-for-cleanup; Codex's deletion aligned with that cleanup intent. No re-add. |
 
 Zero findings remain open. Reviewer Codex's `pnpm red-verify` + `pnpm verify` runs matched the orchestrator's independent post-fix gates (triple confirmation); `pnpm green-verify` exit 0 confirmed post-commit.
 
@@ -1307,7 +1307,7 @@ These observed-run TCs are intrinsically deferred: they cannot be validated loca
 - Set state → `PRE_EPIC_VERIFY`. Run Epic-Level Verification (four parallel reviews + meta-reports + synthesis per skill §Epic-Level Verification).
 - Maintainer applies branch protection on `main` per README CI section. Until applied, TC-5.5a is documented-only.
 - After the next PR runs against this branch, close out the deferred observed-run TCs (TC-5.1a, TC-5.2a-d, TC-5.5a, TC-5.5b) by linking the run URL into this section.
-- `docs/epic-1-app-shell/RESTART-INSTRUCTIONS.md` is stale (Story 0 long accepted) and was already slated for deletion per CLAUDE.md "Current state" note. Sweep with the Epic 1 closeout commit batch.
+- The stale restart handoff doc has been removed from the active Epic 1 artifact set; keep future restart guidance in `team-impl-log.md` and the Codex harness docs instead.
 - The post-M3 release-engineering queue (Decisions #9-#10 + Standing TODOs in `decisions-log.md`) carries forward into the cross-OS-installer + signing + auto-update epic that lands after M3.
 
 **Recommendations for Epic 2 (Twitch OAuth + session issuance):**
@@ -1338,3 +1338,76 @@ These observed-run TCs are intrinsically deferred: they cannot be validated loca
 | OS keychain (`keytar`) | not started | Epic 2 | — |
 
 **Epic 1 status: COMPLETE pending PRE_EPIC_VERIFY.** All 10 stories (Story 0–9) accepted. Cumulative deliverables: 77 Vitest live + 17 Playwright baselines + 1 boot-verify gate + 11 decisions in `decisions-log.md` + Story 8's `pnpm smoke:packaged` + Story 9's `tools/ci/workflow.test.ts`.
+
+---
+
+## Epic-Level Verification — Pre-Acceptance Receipt (2026-04-19)
+
+**Phases executed per `ls-team-impl-v2` §Epic-Level Verification:**
+
+- **Phase 1 — four parallel reviews.** Spawned opus-reviewer, sonnet-reviewer, gpt54-reviewer, gpt53-codex-reviewer.
+  - opus-reviewer: full report at `verification/opus/epic-review.md` (688 lines; 0 Critical / 5 Major / 13 Minor; grade B+).
+  - sonnet-reviewer: full report at `verification/sonnet/epic-review.md` (448 lines; 0 Critical / 3 Major / 8 Minor; grade B).
+  - gpt54-reviewer: Codex gpt-5.4 session `019da386-f16f-74d0-a91d-42dd024339f1` reached turn.completed (7.7M input tokens, 40.5K output, ~17 min wall) but hit Windows tool-runtime wall (STATUS_DLL_INIT_FAILED / Finding 009) on the terminating write. Salvaged by teammate transcription to `verification/gpt54/epic-review.md` (305 lines; 5 Major bullets verbatim from final agent_message; no grade letter emitted).
+  - gpt53-codex-reviewer: **SKIPPED** per skill fallback clause. The `gpt-5.3-codex` model is routable via `-m` but its PowerShell tool invocations die with Windows `STATUS_DLL_INIT_FAILED (0xC0000142)` on turn-2+ — a model-generation-specific incompatibility with Codex v0.120.0 on this host (not a sandbox-bypass issue; bypass was applied). Session `019da388-8b84-7c53-a34a-bc85161f7db6` walled after one turn. Three-reviewer fallback invoked.
+
+- **Phase 2 — meta-reports.** opus-reviewer + sonnet-reviewer ranked the three Phase-1 reports and produced synthesis guidance. gpt54-reviewer skipped (transcription supervisor role, not reviewer).
+  - opus meta: ranked Sonnet > Opus > gpt54 salvage. Conceded own report bloated at 550 lines + 13 Minors.
+  - sonnet meta: ranked Opus > Sonnet > gpt54 salvage. Sonnet acknowledged missing the CLAUDE.md staleness finding Opus caught.
+
+- **Phase 3 — orchestrator synthesis.** `verification/synthesis.md` + `verification/fix-list.md` consolidated 20 numbered fix items (3 must + 9 should + 8 trivial) + 4 verification gate items + 8 deferred/accepted-risk. Grade: **B+** (orchestrator judgment; meta-reports disagreed between B and B+).
+
+- **Phase 4 — pre-verification cleanup batch.** cleanup-impl teammate drove Codex harness (`scripts/codex/drive-until-green.sh`) across 4 iterations, all 19 non-deferred fix-list items landed. cleanup-reviewer teammate dual-reviewed (Codex spec-compliance + Opus architectural), caught 1 Major (UTF-8 mojibake in `tech-design-server.md` from Codex's Windows-write encoding) + 2 Minor. cleanup-fix teammate repaired both Major and Minor using Claude Edit (bypassing Codex for the encoding-sensitive repair). `git add --renormalize .` staged 24 files. All gates green post-fix.
+
+**Top findings + dispositions (per fix-list.md numbering):**
+
+| Item | Severity | Disposition | Notes |
+|------|----------|-------------|-------|
+| 1  | Must   | **fixed** | CLAUDE.md §Current state rewritten to Epic 1 complete |
+| 2  | Must   | **fixed** | TC-6.3a cadence test — mutation-verified (`HEARTBEAT_INTERVAL_MS = 31_000` now fails; 15_000 passes) |
+| 3  | Must   | **fixed** | `.gitattributes` `eol=lf` + `biome.json` `formatter.lineEnding = "lf"`; 24 files renormalized |
+| 4  | Should | **fixed (deps REMOVED)** | Root `package.json` `dependencies` block deleted; V2 gate confirmed packaged boot still green |
+| 5  | Should | **fixed** | Dead `.pnpm/` asarUnpack pattern pruned |
+| 6  | Should | **fixed** | Tech-design companion refresh (PATHS nested, test-e2e-placeholder removed, npmRebuild: false, envelope consolidation, paletteApi path, Windows-only scope); mojibake-repaired via clean re-apply |
+| 7  | Major (disputed) | **fixed** | NavBar `navigate()` dispatch; onGatedNavigate plumbing removed |
+| 8  | Minor  | **fixed** | buildServer test refactored — mutation-verified (`host: '0.0.0.0'` fails) |
+| 9  | Should | **fixed (Path B)** | Windows-only packaging scope documented in README + tech-design-server |
+| 10 | Should | **fixed (Path A)** | SMOKE_MODE wired in `index.ts`; `startElectron` returns BrowserWindow |
+| 11 | Should | **fixed** | `prefers-reduced-motion` CSS rule added |
+| 12 | Should | **fixed (asar monkey-patch RETAINED)** | Upstream not fixed; header comment block explains retention |
+| 13 | Trivial| **fixed** | `testBypass.ts` redundant DEV check removed |
+| 14 | Trivial| **fixed (DELETED)** | `baseSseEventSchema` removed |
+| 15 | Trivial| **fixed** | `braindump.md` gitignored |
+| 16 | Trivial| **fixed** | `test-plan.md` chunk 5-8 narrative reconciled with matrix; total 95 |
+| 17 | Trivial| **fixed** | README §Dev modes tmpdir note added |
+| 18 | Trivial| **fixed** | `RESTART-INSTRUCTIONS.md` deleted; active refs purged |
+| 19 | Trivial| **fixed** | `tools/ci/workflow.test.ts` TC-5.5b on.push structural assertion added |
+| 20 | Trivial| **deferred (orchestrator post-commit)** | `.red-ref` rotation to new cleanup-commit SHA |
+
+- **accepted-risk:** item 12 asar monkey-patch retained without upstream issue link (low risk per reviewer); historical `docs/v2-findings/004` reference to `RESTART-INSTRUCTIONS.md` left untouched (documents a prior session's session-local state).
+
+**Exact gate commands run by orchestrator post-fix (2026-04-19 ~11:27-11:29 local):**
+
+- `pnpm red-verify` → exit 0 (format: 100 files check; lint: 106 files; typecheck: 4 packages across shared/ci/client/server).
+- `pnpm verify` → exit 0. 78 Vitest live = 3 tools/ci + 4 shared + 39 server + 32 client.
+- `pnpm verify-all` → exit 0. 17 Playwright baselines green in 19.9s.
+- `pnpm package && pnpm smoke:packaged` → exit 0 (run by cleanup-reviewer's Codex session `019da622-20b0-7202-9676-1066d88a3188`). Confirms item 4 (root deps removal) safe under hoisted pnpm packaging.
+
+**Cumulative deliverable after pre-verification cleanup:** 78 Vitest live (4 shared + 3 tools/ci + 39 server + 32 client) + 17 Playwright baselines + 1 boot-verify gate + 12 decisions in `decisions-log.md` (items 4, 5, 6, 10, 12 added 2026-04-19 outcome notes).
+
+**UI spec compliance:** Items 7 (NavBar `navigate()` dispatch) and 11 (`prefers-reduced-motion` CSS) produce no pixel drift — all 17 Playwright baselines remain green without regeneration. `toHaveScreenshot({ animations: 'disabled' })` and no `prefers-reduced-motion` flag in Chromium default both insulate the change. **No new human visual review required for this batch** (human already reviewed during Story 5 acceptance; no baseline regeneration).
+
+**Open risks:** none blocking. Epic 1 acceptance commits land on branch `epic-1/fix-gitattributes-eol-lf` via existing PR #2 (expanded scope from single-file CRLF fix to full pre-verification cleanup). Human merges to main after PR review. Item 20 (`.red-ref` rotation) rotates to the new cleanup-commit SHA after merge to main; `pnpm green-verify` confirms post-rotation.
+
+**v2-findings-worthy observations captured during this run:**
+
+1. **Windows PowerShell vs Codex v0.120.0 on gpt-5.3-codex** — the model is routable via `-m gpt-5.3-codex` but its shell_command tool invocations die with `STATUS_DLL_INIT_FAILED` from the Windows `CreateProcess` layer. Effectively non-functional for any review/implementation task. Should be documented as a new v2-finding and reflected in `~/.codex/models_cache.json` visibility or the codex-subagent skill's model recommendations.
+2. **Finding 009 session-wide walls may extend to host state** — gpt54-reviewer's retry Codex process walled from its first tool call (more aggressive than Finding 009 documents). Suggests finding 009 needs a host-reboot addendum or a "do not retry on this host until runtime clears" recommendation.
+3. **Codex Windows write produces mojibake on re-edit of existing UTF-8 text with em-dashes / section marks** — `tech-design-server.md` corrupted during item 6 implementation. Claude Edit tool does not exhibit this. Consider documenting as a v2-finding: "Codex shell_command writes on Windows emit CP1252-encoded text when the source is UTF-8 with high-codepoint characters; prefer Claude Edit for encoding-sensitive files."
+4. **Ground-truth gate remains load-bearing** — cleanup-impl iter-3 had wrapper-verdict OK but gate exit 1; driver correctly composed a fix prompt per the `docs/codex-harness.md` invariant "the gate is authoritative, not the wrapper verdict." Good evidence that this invariant continues to prevent false greens.
+5. **Orchestrator task-list role drift** — tasks #7, #8, #10 were orchestrator-only but I didn't set `owner=team-lead` on creation. Idle teammates (opus-reviewer, sonnet-reviewer) claimed them via the "prefer lowest-ID available task" convention. sonnet-reviewer then pushed a branch + opened PR #2 without authorization. Lesson: claim orchestrator-only tasks immediately via `TaskUpdate owner=team-lead` on create.
+6. **PR #2 scope-creep scenario handled via Option C (expand PR).** Rather than closing the unauthorized PR, expanded it to cover the full batch. Less disruptive but required amending title + body post-commit.
+
+---
+
+*Pre-acceptance receipt written before commit. State will advance to `COMPLETE` after the commit + push + PR merge to main.*

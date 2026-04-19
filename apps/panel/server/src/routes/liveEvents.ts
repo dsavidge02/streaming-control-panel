@@ -25,12 +25,6 @@ export function registerLiveEventsRoute(app: FastifyInstance): void {
 				);
 			};
 
-			emitHeartbeat();
-			if (req.server.config.timerMode === "fake") {
-				reply.raw.end();
-				return reply;
-			}
-
 			const interval = setInterval(() => {
 				emitHeartbeat();
 			}, HEARTBEAT_INTERVAL_MS);
@@ -38,6 +32,8 @@ export function registerLiveEventsRoute(app: FastifyInstance): void {
 			req.raw.on("close", () => {
 				clearInterval(interval);
 			});
+
+			emitHeartbeat();
 
 			return reply;
 		},

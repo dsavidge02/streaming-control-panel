@@ -44,11 +44,13 @@ export async function buildServer(options: BuildServerOptions = {}) {
 	return { app, db, config };
 }
 
-export async function startServer(): Promise<{
+export async function startServer(
+	build: () => ReturnType<typeof buildServer> = buildServer,
+): Promise<{
 	url: string;
 	close: () => Promise<void>;
 }> {
-	const { app, config } = await buildServer();
+	const { app, config } = await build();
 	await app.listen({ host: config.host, port: config.port });
 
 	return {
