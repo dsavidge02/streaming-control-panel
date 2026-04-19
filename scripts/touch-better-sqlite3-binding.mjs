@@ -1,7 +1,8 @@
 import { existsSync, readdirSync, utimesSync } from "node:fs";
 import path from "node:path";
 
-const pnpmDir = path.join(process.cwd(), "node_modules", ".pnpm");
+const nodeModulesDir = path.join(process.cwd(), "node_modules");
+const pnpmDir = path.join(nodeModulesDir, ".pnpm");
 const bindingSuffix = path.join(
 	"better-sqlite3",
 	"build",
@@ -39,12 +40,18 @@ function findBinding(startDir) {
 	return null;
 }
 
-if (!existsSync(pnpmDir)) {
-	console.error("[rebuild:node] missing node_modules/.pnpm");
+const searchRoots = [pnpmDir, nodeModulesDir].filter(existsSync);
+if (searchRoots.length === 0) {
+	console.error("[rebuild:node] missing node_modules");
 	process.exit(1);
 }
 
-const bindingPath = findBinding(pnpmDir);
+let bindingPath = null;
+for (const root of searchRoots) {
+	bindingPath = findBinding(root);
+	if (bindingPath) break;
+}
+
 if (!bindingPath) {
 	console.error(
 		"[rebuild:node] better-sqlite3 binding not found after rebuild",
