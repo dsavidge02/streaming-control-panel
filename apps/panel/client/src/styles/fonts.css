@@ -1,0 +1,29 @@
+﻿@font-face {
+	font-family: "Press Start 2P";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src:
+		local("Press Start 2P"),
+		url("/fonts/PressStart2P-Regular.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Space Mono";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src:
+		local("Space Mono"),
+		url("/fonts/SpaceMono-Regular.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Space Mono";
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src:
+		local("Space Mono Bold"),
+		url("/fonts/SpaceMono-Bold.woff2") format("woff2");
+}

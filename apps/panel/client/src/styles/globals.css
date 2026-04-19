@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+:root {
+	--panel-bg: #131005;
+	--panel-bg-panel: #1f1a0a;
+	--panel-bg-panel-overlay: rgba(31, 26, 10, 0.88);
+	--panel-ink: #ffd89a;
+	--panel-ink-muted: #c9a66a;
+	--panel-primary: #ffb347;
+	--panel-primary-ink: #131005;
+	--panel-accent: #7fd4ff;
+	--panel-accent-ink: #0a1420;
+	--panel-warn: #ff8a6b;
+	--panel-rule: #3a2f15;
+	--panel-scanline: rgba(255, 179, 71, 0.04);
+	--panel-grid-line: rgba(255, 179, 71, 0.08);
+	--panel-mesh:
+		radial-gradient(
+			ellipse 900px 600px at 15% -10%,
+			rgba(255, 179, 71, 0.14),
+			transparent 60%
+		),
+		radial-gradient(
+			ellipse 700px 500px at 95% 110%,
+			rgba(127, 212, 255, 0.08),
+			transparent 60%
+		);
+	background: var(--panel-bg);
+	color: var(--panel-ink);
+}
+
+html,
+body,
+#root {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--panel-bg);
+	color: var(--panel-ink);
+}
+
+button {
+	font: inherit;
+}
+
+.panel-focus:focus-visible {
+	outline: 2px solid var(--panel-accent);
+	outline-offset: 2px;
+}
+
+.landing-scanlines,
+.landing-mesh,
+.landing-grid {
+	inset: 0;
+	pointer-events: none;
+	position: absolute;
+}
+
+.landing-scanlines {
+	background-image: repeating-linear-gradient(
+		0deg,
+		var(--panel-scanline) 0 1px,
+		transparent 2px 4px
+	);
+}
+
+.landing-mesh {
+	background: var(--panel-mesh);
+}
+
+.landing-grid {
+	background-image:
+		linear-gradient(var(--panel-grid-line) 1px, transparent 1px),
+		linear-gradient(90deg, var(--panel-grid-line) 1px, transparent 1px);
+	background-size: 48px 48px;
+}
+
+.marquee-anim {
+	animation: marq 28s linear infinite;
+}
+
+@keyframes marq {
+	0% {
+		transform: translateX(0%);
+	}
+
+	100% {
+		transform: translateX(-50%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.marquee-anim {
+		animation: none;
+	}
+}

@@ -1,0 +1,58 @@
+=== ENVIRONMENT RULES (Windows, streaming-control-panel project) ===
+
+0. FIRST THING: echo DELIVERY_CHECK_MARKER_ECHO_7077 before anything else.
+   Skip this check and the run is invalid — the caller greps the JSONL for
+   this marker before trusting any Codex output. (Finding 004)
+
+1. Workspace-only reads. Never recursively scan C:\github, C:\Users, or any
+   path outside C:/github/streaming-control-panel. Artifact paths in the
+   epic / tech design / story / test-plan are all you need. Recursive
+   cross-repo scans time out and waste budget. (Finding 001)
+
+2. pnpm binary: invoke the globally-installed pnpm directly. Do NOT run
+   `corepack enable`. Do NOT use corepack at all. Use:
+     /c/Users/dsavi/AppData/Local/fnm_multishells/6536_1776434373367/pnpm
+   (or `pnpm` if already on PATH for this shell). Install packages from
+   the npm registry via declared semver ranges. (Finding 001)
+
+3. Abort on failure. If `pnpm install` or any registry fetch fails, STOP
+   and report. NEVER emit `link:` dependencies as a fallback — they point
+   to random local directories, break CI, and were the reason Story 0 was
+   rolled back. No dep graph is better than a corrupted dep graph.
+   (Finding 001)
+
+4. apply_patch fallback. If `apply_patch` fails for any file, fall back
+   to a full-file write via a single write call. Do not retry apply_patch
+   on the same file. (Finding 001)
+
+5. Trust the filesystem, not self-reports. Codex wraps combined PowerShell
+   statements into a single -Command block; CWD and intermediate state do
+   not reliably carry across statements. In-block `Test-Path` / existence
+   checks return false positives/negatives. Ground truth is verified from
+   bash after Codex exits. (Finding 005)
+
+6. Clean up lockfile backups. Delete any transient
+   `pnpm-lock.yaml.<digits>` file before finishing; only
+   `pnpm-lock.yaml` itself should remain. (Finding 001)
+
+7. APPEND, do not replace. When a deliverable is described as "additions
+   to an existing file" (e.g., .gitignore entries, README sections,
+   package.json script additions), APPEND — do not replace. Preserve all
+   existing content. Story 0's .gitignore was nearly wiped because this
+   was implicit. (Story 0 orchestration finding #6)
+
+9. Rule 9 — per-command flake retry. If a single command exits with
+   exit_code == -1073741502 AND empty stdout/stderr, retry that exact
+   command up to 3 times with 2s delay between attempts. Signature is
+   Windows STATUS_DLL_INIT_FAILED on PowerShell spawn; surgical; never
+   fires on real failures. (Finding 006)
+
+9b. Rule 9b — session-wall short-circuit. If the FIRST 3 consecutive
+    commands of this session all fail with -1073741502 empty output,
+    and the commands are heterogeneous (e.g., echo + sleep + file-read,
+    not the same command retried), the whole session is walled.
+    STOP IMMEDIATELY — do not continue per-command retries, do not
+    attempt more commands. Emit an agent_message stating
+    "SESSION_WALL_DETECTED: first 3 commands all -1073741502 empty"
+    and end the turn. The caller's wrapper will relaunch a fresh
+    `codex exec` (NEW process; do NOT use `resume`). (Finding 009)

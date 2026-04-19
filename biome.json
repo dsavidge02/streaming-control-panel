@@ -1,0 +1,18 @@
+{
+	"formatter": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true
+	},
+	"files": {
+		"includes": [
+			"**",
+			"!node_modules",
+			"!**/dist",
+			"!**/test-results",
+			"!coverage",
+			"!docs/references"
+		]
+	}
+}
