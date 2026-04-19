@@ -2,7 +2,7 @@
 
 **Skill:** `ls-team-impl-v2` (experimental — paired with `ls-tech-design-v2`)
 
-**state:** `PRE_EPIC_VERIFY` — Story 8 accepted 2026-04-18 via TC-4.2a observed-run after four fix rounds. Cumulative test count: **75 Vitest live (4 shared + 39 server + 32 client) + 17 Playwright baselines + 1 boot-verify gate (`pnpm smoke:packaged`)**. All 5 orchestrator gates green: `red-verify` (100 files format-check, 101 linted, 3 packages typecheck); `verify` (75/75 Vitest); `verify-all` (75 Vitest + 17 Playwright); `package` (NSIS installer `Streaming Control Panel Setup 0.0.0.exe` 104 MB); `smoke:packaged` PASS. **Story 8 journey: fix-1 → hollow asar (renderer + node_modules missing); fix-2 → native ABI mismatch (Node 137 vs Electron 145); fix-4 → consolidated hoisting + drizzle files: + smoke gate + Story 7 latent defects (renderer outDir absolute path, app.ts RENDERER_ROOT `../../renderer` → `../renderer`, `app.whenReady()` race fix attempt); fix-5 → TLA+whenReady hang in packaged main (diagnosed via instrumented `[diag]` logging; rewrote index.ts to `app.whenReady().then(...)` pattern + added `app.requestSingleInstanceLock()` for double-launch protection); cleanup → diagnostic logging removed + deferred doc updates landed (architecture.md, CLAUDE.md, test-plan.md, 00-foundation.md retrospective sidecar) + smoke-packaged.mjs Windows tree-kill (`taskkill /F /T` instead of `child.kill()`) + decisions-log.md updated with 11 decisions.** Story 8 introduces the first research-backed root-cause fix of the epic: **`.npmrc` `node-linker=hoisted`** — the recurring pnpm-symlink-store traversal issue that produced 3 distinct observed-run-only Criticals (all cataloged as Decision #1 in `docs/epic-1-app-shell/stories/decisions-log.md`). New files: `electron-builder.yml`, `scripts/{package-and-restore-native.mjs, touch-better-sqlite3-binding.mjs, patch-local-asar-cli.mjs, smoke-packaged.mjs}`, `apps/panel/server/src/electron/readme-package.test.ts` (1 new Vitest TC-4.3a), `docs/epic-1-app-shell/stories/decisions-log.md`. Modified: `.npmrc` (+ node-linker=hoisted), `package.json` (package script + 7 runtime deps + name/version + smoke:packaged script), `electron.vite.config.ts` (renderer outDir absolute), `apps/panel/server/src/index.ts` (app.whenReady().then pattern + single-instance-lock), `apps/panel/server/src/electron/app.ts` (RENDERER_ROOT path + removed redundant whenReady), `README.md` (Packaging section), `CLAUDE.md`, `docs/architecture.md`, `docs/epic-1-app-shell/tech-design-server.md`, `docs/epic-1-app-shell/test-plan.md`, `docs/epic-1-app-shell/stories/00-foundation.md` (retrospective sidecar). Ready to commit Story 8; `.red-ref` will rotate from stale Story 6 `2040a42` directly to Story 8's SHA (restores `pnpm green-verify`). Epic 1 state after Story 8 commit: Stories 0–8 accepted. Story 9 (GitHub Actions CI workflow) is the last story of Epic 1; parallelizable with Stories 1–8 per coverage.md but sequenced last so CI can gate real code.
+**state:** `BETWEEN_STORIES` — Story 8 accepted + committed 2026-04-18 at `79570d8` via TC-4.2a observed-run after four fix rounds. `.red-ref` rotated to `79570d8`; `pnpm green-verify` confirmed green post-rotation. Story 9 (CI workflow) is next and last of Epic 1; after acceptance, state will advance to `PRE_EPIC_VERIFY` for Epic-Level Verification. Cumulative test count: **75 Vitest live (4 shared + 39 server + 32 client) + 17 Playwright baselines + 1 boot-verify gate (`pnpm smoke:packaged`)**. All 5 orchestrator gates green: `red-verify` (100 files format-check, 101 linted, 3 packages typecheck); `verify` (75/75 Vitest); `verify-all` (75 Vitest + 17 Playwright); `package` (NSIS installer `Streaming Control Panel Setup 0.0.0.exe` 104 MB); `smoke:packaged` PASS. **Story 8 journey: fix-1 → hollow asar (renderer + node_modules missing); fix-2 → native ABI mismatch (Node 137 vs Electron 145); fix-4 → consolidated hoisting + drizzle files: + smoke gate + Story 7 latent defects (renderer outDir absolute path, app.ts RENDERER_ROOT `../../renderer` → `../renderer`, `app.whenReady()` race fix attempt); fix-5 → TLA+whenReady hang in packaged main (diagnosed via instrumented `[diag]` logging; rewrote index.ts to `app.whenReady().then(...)` pattern + added `app.requestSingleInstanceLock()` for double-launch protection); cleanup → diagnostic logging removed + deferred doc updates landed (architecture.md, CLAUDE.md, test-plan.md, 00-foundation.md retrospective sidecar) + smoke-packaged.mjs Windows tree-kill (`taskkill /F /T` instead of `child.kill()`) + decisions-log.md updated with 11 decisions.** Story 8 introduces the first research-backed root-cause fix of the epic: **`.npmrc` `node-linker=hoisted`** — the recurring pnpm-symlink-store traversal issue that produced 3 distinct observed-run-only Criticals (all cataloged as Decision #1 in `docs/epic-1-app-shell/stories/decisions-log.md`). New files: `electron-builder.yml`, `scripts/{package-and-restore-native.mjs, touch-better-sqlite3-binding.mjs, patch-local-asar-cli.mjs, smoke-packaged.mjs}`, `apps/panel/server/src/electron/readme-package.test.ts` (1 new Vitest TC-4.3a), `docs/epic-1-app-shell/stories/decisions-log.md`. Modified: `.npmrc` (+ node-linker=hoisted), `package.json` (package script + 7 runtime deps + name/version + smoke:packaged script), `electron.vite.config.ts` (renderer outDir absolute), `apps/panel/server/src/index.ts` (app.whenReady().then pattern + single-instance-lock), `apps/panel/server/src/electron/app.ts` (RENDERER_ROOT path + removed redundant whenReady), `README.md` (Packaging section), `CLAUDE.md`, `docs/architecture.md`, `docs/epic-1-app-shell/tech-design-server.md`, `docs/epic-1-app-shell/test-plan.md`, `docs/epic-1-app-shell/stories/00-foundation.md` (retrospective sidecar). Ready to commit Story 8; `.red-ref` will rotate from stale Story 6 `2040a42` directly to Story 8's SHA (restores `pnpm green-verify`). Epic 1 state after Story 8 commit: Stories 0–8 accepted. Story 9 (GitHub Actions CI workflow) is the last story of Epic 1; parallelizable with Stories 1–8 per coverage.md but sequenced last so CI can gate real code.
 
 **Previously: STORY_ACTIVE** — Story 8 started 2026-04-18 in a fresh Claude Code session. Phase: `reviewing` (impl GREEN iter 1; Codex thread `019da1ed-de08-7191-9155-803696c2b516`; wrapper verdict REAL_ERROR but ground-truth gate exit 0 per §Invariant 6; `pnpm package` exercised 20× inside Codex session producing NSIS installer `Streaming Control Panel Setup 0.0.0.exe` at 99MB in `dist/packaged/` — Finding 011-class toolchain-config gate passed in-session; implementer cycled off; reviewer spawning now). Team `epic-1-app-shell` persisted from prior session; stale `fix-renderer-story-7` teammate pruned via `shutdown_request` before spawn. `ls-team-impl-v2` skill reloaded at session boot. Entering baseline: 74 Vitest live (4 shared + 38 server + 32 client) + 17 Playwright baselines; HEAD `57d5390` on main with Story 7's full commit chain (`70c9824` + `8388e56` + `b031410` + `57d5390`) already landed. `.red-ref` currently at Story 6's `2040a42` (stale — Story 7 added `readme.test.ts` but `.red-ref` was never rotated; rotation will land post-Story-8-commit targeting Story 8's SHA, restoring `pnpm green-verify`). Story 8 scope: electron-builder 26.8 config (`electron-builder.yml` at repo root with appId `com.streamingpanel.app`, asar + asarUnpack for native binding, per-OS targets), root `package` script (`electron-vite build && electron-builder`), README packaging section, 1 new Vitest (`server/src/electron/readme-package.test.ts` — TC-4.3a grep). Target delta: +1 Vitest server test (74→75 live), zero Playwright baselines. Observed-run TCs (TC-4.1a, TC-4.2a) require human verification of the packaged artifact launching to landing — consistent with the Story 7 pattern. Pre-acceptance gate (orchestrator): `pnpm red-verify && pnpm verify && pnpm verify-all`. Dependencies satisfied: Stories 3 + 7 provide the native-binding + electron-vite pipeline the packager wraps. Note: `electron-builder ^26.8.1` already listed in root `package.json` devDeps (Story 7 landed it); Story 8 adds only the config + script + test + README.
 
@@ -1232,3 +1232,109 @@ Zero findings remain open-blocking.
 | Twitch Helix / EventSub | not started | Epic 3 / Epic 4a | — |
 | OS keychain (`keytar`) | not started | Epic 2 | — |
 | GitHub Actions CI | partial (docs-fallback) | Story 9 | — (next) |
+
+### Story 9 — Pre-Acceptance Receipt (2026-04-18)
+
+**Implementation path:** direct (no Codex harness, no agent-team orchestration). The user explicitly chose plan-and-execute given Story 9's small scope, prescriptive spec, and well-understood deliverables. Story 8's transition checkpoint had pre-cleared the open questions: skip Playwright + smoke gate in CI (no Electron runtime on Ubuntu), keep `pnpm install --frozen-lockfile` + `pnpm verify` only, run on `pull_request` against `main` (no push trigger).
+
+**Files landed:**
+
+- `pnpm-workspace.yaml` — added `'tools/*'` to the `packages:` glob.
+- `tools/ci/package.json` (new) — `@panel/ci-tools`, private, scripts mirror `@panel/shared` (`typecheck` + `test`); devDeps `vitest`, `typescript`, `js-yaml`, `@types/js-yaml`.
+- `tools/ci/tsconfig.json` (new) — extends `../../tsconfig.base.json`, `rootDir: "."`, `include: ["**/*.ts"]`.
+- `tools/ci/vitest.config.ts` (new) — minimal node environment, mirror of `apps/panel/shared/vitest.config.ts`.
+- `tools/ci/workflow.test.ts` (new) — 2 tests inside one `describe`: TC-5.3a (no packaging/release-publish/cross-OS) + TC-5.4a (every `pnpm <script>` run maps to a script in root `package.json`, with `pnpm install` skipped as package-manager primitive). Tests parse `.github/workflows/ci.yml` once with `js-yaml` and resolve paths relative to `import.meta.url`.
+- `.github/workflows/ci.yml` — replaced the docs-fallback detection workflow with the Story 9 §Technical Design contract: single `verify` job on `ubuntu-24.04`, steps = `actions/checkout@v4`, `pnpm/action-setup@v4` (v10), `actions/setup-node@v4` (node 24, cache pnpm), `pnpm install --frozen-lockfile`, `pnpm verify`. No `push:` trigger.
+- `README.md` — inserted `## Continuous Integration` section between `## Dev modes` and `## Packaging`. Documents the workflow, how to interpret failing CI, and the maintainer-side branch-protection setup steps for `main` (Settings → Branches → require `CI / verify`).
+- `pnpm-lock.yaml` — regenerated by `pnpm install` after the workspace addition.
+- `.github/workflows/post-merge.yml` — **untouched.** Pre-existing, gated behind `ENABLE_POST_MERGE_RELEASE` repo variable, doesn't violate any Story 9 AC; touching it would be scope creep.
+
+**Top findings and dispositions:**
+
+| # | Finding | Severity | Disposition | Reasoning |
+|---|---------|----------|-------------|-----------|
+| O1 | Test "red gate" never went red against the docs-fallback workflow | Observation | **noted, not a defect** | The pre-existing `ci.yml` only ever ran `pnpm verify` (the only `pnpm <script>` invocation outside `pnpm install`), and `verify` is a defined script. The structural invariants in TC-5.3a + TC-5.4a happened to already hold. The test still discharges its purpose — it guards against future drift (e.g., a future `pnpm package` step or a release action being added). |
+| O2 | Spec called for "2 tests"; first draft had 4 (split TC-5.3a sub-assertions into separate `it` blocks) | Minor | **fixed pre-verify** | Consolidated into 2 `it()` blocks (one per TC), matching the test-plan Chunk 9 count. Cumulative Vitest live count target of 77 holds. |
+| O3 | Biome format flagged the `JSON.parse(...) as { ... }` cast in `workflow.test.ts` | Minor | **fixed pre-verify** | `pnpm format:fix` reformatted to biome's preferred multi-line style. No behavior change. |
+| O4 | Workflow only tests the `pnpm install` allowance via the `subcommand === "install"` branch | Observation | **kept** | Spec explicitly calls out `pnpm install` as a package-manager primitive (story §Technical Design). The skip is the implementation of that allowance. |
+
+Zero findings remain open-blocking.
+
+**Exact gate commands run by orchestrator** (ground truth, 2026-04-18 ~20:13 local):
+
+- `pnpm install` → exit 0 (5 workspace projects: server + client + shared + ci-tools + root; +8 packages, -98 stale).
+- `pnpm --filter @panel/ci-tools test` → exit 0 (2/2 passing, 213 ms).
+- `pnpm verify` → exit 0. Format checked 105 files; lint 106 files; typecheck across 4 packages (shared, ci, client, server); tests = **77 Vitest live** (4 shared + 2 ci-tools + 39 server + 32 client). Hits the chunk-9 target exactly.
+- `git diff --stat` across all touched paths: 4 modified (pnpm-workspace.yaml, .github/workflows/ci.yml, README.md, pnpm-lock.yaml) + 4 new (tools/ci/{package.json,tsconfig.json,vitest.config.ts,workflow.test.ts}). No overwrite regressions.
+
+**Cumulative test count after Story 9: 77 Vitest live + 17 Playwright baselines + 1 boot-verify gate.** Breakdown unchanged from Story 8 except `tools/ci/workflow.test.ts` adds 2 to the Vitest total.
+
+**Observed-run TCs requiring a real GitHub Actions run (not yet executed; deferred to first PR after this branch is pushed):**
+
+- TC-5.1a — workflow triggers on `pull_request` against `main`, runs on Linux runner.
+- TC-5.2a/b/c/d — lint/typecheck/test/green steps observed.
+- TC-5.5b — push to `main` does NOT trigger `CI / verify`.
+- TC-5.5a — failing CI blocks merge. **Requires the maintainer-side branch protection step documented in the README** (Settings → Branches → require `CI / verify` on `main`). Until that's applied, TC-5.5a is documented-but-not-enforced.
+
+These observed-run TCs are intrinsically deferred: they cannot be validated locally; they validate as soon as the first PR runs CI. The README documents the maintainer's one-time UI action required for TC-5.5a.
+
+**UI spec compliance:** N/A. Story 9 ships no renderer changes.
+
+**Open risks:** none blocking. Maintainer must apply branch protection on GitHub (one-time action; documented in README CI section).
+
+### Story 9 Orchestration Observations (captured for v2-findings + future handoffs)
+
+1. **Direct implementation was the right call for this story shape.** Story 9 had a fully-specified §Technical Design contract, a clear DoD checklist, no architectural ambiguity, and no Electron / packaging surface to bite us. Spawning the Codex harness + dual review for a 4-file change would have been pure orchestration overhead. Heuristic for future stories: when the spec is line-level prescriptive, the deliverable is YAML + 2 tests + a README section, and the verification is `pnpm verify` + a future PR observation, direct implementation lands faster and cleaner.
+
+2. **Test design lesson — invariants vs. behaviors.** TC-5.3a + TC-5.4a are *invariant* tests: they assert the absence of bad shapes (no `electron-builder`, no release actions, no orphan `pnpm` scripts). They don't assert positive behavior of the workflow itself (which requires GitHub's runner). Invariant tests don't have a natural "red" state because the artifact under test is usually *already* well-formed when authored. They earn their keep against drift, not as a TDD gate. Worth distinguishing in future test-plan chunks: invariant assertions vs. behavior assertions vs. observed-run.
+
+3. **`tools/*` workspace pattern is reusable.** Adding a workspace glob for tooling-only packages (no runtime code, no app deps) keeps the runtime dep tree clean while still riding `pnpm -r typecheck` + `pnpm -r test`. Future epics will likely want similar (e.g., `tools/release/` for the post-M3 release-engineering pass; `tools/migrations/` if migration tooling needs its own workspace). Document the pattern in `docs/architecture.md` if it persists past Epic 1.
+
+4. **Branch protection lives outside the artifact.** `CI / verify` as a required check is a GitHub repo-Settings concern, not a code concern. README documents the steps; maintainer applies. This means TC-5.5a is *partially* enforceable by code (the workflow exists with the right job/check name) and *partially* enforceable by configuration (the branch rule). The observed-run TC closes only when both are in place. Worth flagging in future epics: ACs that depend on out-of-repo configuration need an explicit owner.
+
+5. **Epic 1 closeout queued.** Story 9 was the last story. Set epic state → `PRE_EPIC_VERIFY` and run Epic-Level Verification (four parallel reviews + meta-reports + synthesis per the v2 skill §Epic-Level Verification) when ready. The full Epic 1 inventory is now: 9 accepted stories, 77 Vitest live, 17 Playwright baselines, 1 boot-verify gate, 11 decisions in `decisions-log.md`, post-M3 release-engineering queue captured in §Standing TODOs.
+
+### Story 9 — Transition Checkpoint (accepted 2026-04-18; ready to commit)
+
+**Cumulative test count after Story 9: 77 Vitest live + 17 Playwright baselines + 1 boot-verify gate.** Hits the test-plan Chunk 9 target exactly.
+
+**Problems encountered:** none material. Format auto-fix on first pass; test-count consolidation from 4 to 2 to match spec. Both absorbed pre-verify.
+
+**Impact and resolution:** all absorbed in-cycle. Story 9 ships green on the first verify pass after the format fix. The CI workflow is now the simple shape Story 9 §Technical Design specified; the docs-fallback detection logic is retired. The `tools/*` workspace glob is established for future tooling-only packages.
+
+**Recommendations for Epic 1 closeout:**
+
+- Set state → `PRE_EPIC_VERIFY`. Run Epic-Level Verification (four parallel reviews + meta-reports + synthesis per skill §Epic-Level Verification).
+- Maintainer applies branch protection on `main` per README CI section. Until applied, TC-5.5a is documented-only.
+- After the next PR runs against this branch, close out the deferred observed-run TCs (TC-5.1a, TC-5.2a-d, TC-5.5a, TC-5.5b) by linking the run URL into this section.
+- `docs/epic-1-app-shell/RESTART-INSTRUCTIONS.md` is stale (Story 0 long accepted) and was already slated for deletion per CLAUDE.md "Current state" note. Sweep with the Epic 1 closeout commit batch.
+- The post-M3 release-engineering queue (Decisions #9-#10 + Standing TODOs in `decisions-log.md`) carries forward into the cross-OS-installer + signing + auto-update epic that lands after M3.
+
+**Recommendations for Epic 2 (Twitch OAuth + session issuance):**
+
+- Epic 2 inherits hoisted pnpm, the `pnpm verify` gate, and the `tools/*` workspace pattern. No infrastructure changes expected.
+- Epic 2 will introduce `keytar` (OS keychain) — another native dep. Add to `pnpm.onlyBuiltDependencies`; verify the `rebuild:electron` script catches it.
+- Epic 2 closes the AUTH stub: `POST /auth/login` body changes from 501 to a real OAuth redirect. The Story 9 CI workflow will keep gating; no CI changes expected unless Epic 2 introduces a new test surface that needs special handling.
+
+**Boundary inventory after Story 9:**
+
+| Boundary | Status | Owning Story | Change from Story 8? |
+|----------|--------|--------------|----------------------|
+| GitHub Actions CI | **integrated** (`pnpm verify` on Ubuntu against every PR; structural invariants gated by `tools/ci/workflow.test.ts`; merge gate requires maintainer to enable branch protection) | Story 9 | **advanced** (was partial / docs-fallback) |
+| `tools/*` workspace pattern | **established** (`tools/ci` is the first; pnpm-workspace.yaml glob added; mirror of `apps/panel/shared` scaffold) | Story 9 | new pattern |
+| Packaged binary | integrated | Story 8 | — |
+| pnpm workspace layout | hoisted | Story 8 | — |
+| Boot-time verification surface | integrated | Story 8 | — |
+| Electron shell | integrated | Story 7 | — |
+| Renderer asset delivery | integrated | Story 7 | — |
+| React Router | wired | Story 6 | — |
+| Client renderer | fully implemented | Story 5 + 6 + 7 + 8 | — |
+| Twitch OAuth (`/auth/login`) | stub body + real Origin gate | Story 2 → Story 4 → Epic 2 | — |
+| Twitch OAuth callback (`/oauth/callback`) | stub body + exempt gate | Story 2 → Epic 2 | — |
+| Live SSE producers | stub cadence + real session gate | Story 2 → Story 4 → Epic 4a | — |
+| SQLite filesystem | integrated | Story 3 + Story 8 | — |
+| Session cookies (`iron-session`) | wired | Story 4 | — |
+| Twitch Helix / EventSub | not started | Epic 3 / Epic 4a | — |
+| OS keychain (`keytar`) | not started | Epic 2 | — |
+
+**Epic 1 status: COMPLETE pending PRE_EPIC_VERIFY.** All 10 stories (Story 0–9) accepted. Cumulative deliverables: 77 Vitest live + 17 Playwright baselines + 1 boot-verify gate + 11 decisions in `decisions-log.md` + Story 8's `pnpm smoke:packaged` + Story 9's `tools/ci/workflow.test.ts`.

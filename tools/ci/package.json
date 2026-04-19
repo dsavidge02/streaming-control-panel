@@ -1,0 +1,16 @@
+{
+	"name": "@panel/ci-tools",
+	"private": true,
+	"type": "module",
+	"version": "0.0.0",
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run"
+	},
+	"devDependencies": {
+		"@types/js-yaml": "^4.0.9",
+		"js-yaml": "^4.1.0",
+		"typescript": "^5",
+		"vitest": "^4"
+	}
+}
